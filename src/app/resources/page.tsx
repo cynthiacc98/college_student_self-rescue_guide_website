@@ -1,29 +1,46 @@
 export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import ResourceCard from "@/components/ResourceCard";
-import { Suspense } from "react";
 import { Skeleton } from "@/components/Skeleton";
 
-async function ResourcesList() {
-  const items = await prisma.resource.findMany({ where: { isPublic: true }, orderBy: { createdAt: "desc" }, take: 24 });
+async function ResourceList() {
+  const resources = await prisma.resource.findMany({
+    where: { isPublic: true },
+    include: {
+      category: {
+        select: {
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (resources.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-foreground-muted">暂无公开资料</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {items.map((r) => (
-        <ResourceCard key={r.id} id={r.id} title={r.title} coverImageUrl={r.coverImageUrl || undefined} />)
-      )}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {resources.map((resource, index) => (
+        <ResourceCard key={resource.id} resource={resource} index={index} />
+      ))}
     </div>
   );
 }
 
-function ResourcesSkeleton() {
+function ResourceListSkeleton() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {Array.from({ length: 12 }).map((_, i) => (
-        <div key={i} className="rounded-xl border bg-white overflow-hidden">
-          <Skeleton className="aspect-[4/3] w-full" />
-          <div className="p-3"><Skeleton className="h-4 w-2/3" /></div>
-        </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <Skeleton key={i} className="h-[320px] rounded-2xl" />
       ))}
     </div>
   );
@@ -31,11 +48,14 @@ function ResourcesSkeleton() {
 
 export default function ResourcesPage() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 space-y-4">
-      <h1 className="text-xl font-semibold">所有资料</h1>
-      <Suspense fallback={<ResourcesSkeleton />}> 
-        {/* @ts-expect-error Async Server Component */}
-        <ResourcesList />
+    <div className="container-fluid py-8">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-3">学习资料库</h1>
+        <p className="text-foreground-muted">探索高质量的学习资源</p>
+      </div>
+      
+      <Suspense fallback={<ResourceListSkeleton />}>
+        <ResourceList />
       </Suspense>
     </div>
   );
