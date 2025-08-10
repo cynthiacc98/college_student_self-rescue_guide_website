@@ -28,3 +28,14 @@
 验证：
 - 运行 `npm run build` 通过；页面静态构建通过
 - 后续将使用 Playwright MCP 进行交互验证（需本地或远端 MongoDB 可用时完成注册/登录流程验证）
+
+——
+
+2025-08-11 补充：
+- 修复：后台分类/资料 API 中涉及写操作的接口切换为 Mongo 原生 driver，避免 Prisma P2031（副本集事务要求）。
+  - `POST /api/admin/categories`、`PATCH/DELETE /api/admin/categories/[id]`
+  - `POST /api/admin/resources`、`DELETE /api/admin/resources/[id]`（同时支持表单 `_method=DELETE`）
+- E2E 验证：
+  - 登录管理员后在 `/admin/resources/new` 创建“离散数学 笔记精编”成功；跳转编辑页；列表显示；删除按钮删除后重定向回列表。
+  - `/admin/categories` 新建、编辑、排序、启用/停用、删除均成功，删除会将关联资源 `categoryId` 置空。
+- 后台仪表盘：新增“趋势占位”区块（后续可接入真实统计）。

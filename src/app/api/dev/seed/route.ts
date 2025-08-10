@@ -65,12 +65,21 @@ export async function POST() {
         },
         { upsert: true }
       );
+      const inserted = await db.collection("Resource").findOne({ slug: r.slug });
+      if (inserted) {
+        await db.collection("ResourceStat").updateOne(
+          { resourceId: inserted._id },
+          { $setOnInsert: { views: 0, clicks: 0, likes: 0, createdAt: now }, $set: { updatedAt: now } },
+          { upsert: true }
+        );
+      }
     }
 
     const count = await db.collection("Resource").countDocuments();
     return NextResponse.json({ ok: true, count });
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
     console.error("SEED_ERROR", e);
-    return NextResponse.json({ ok: false, error: String(e?.message || e) }, { status: 500 });
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

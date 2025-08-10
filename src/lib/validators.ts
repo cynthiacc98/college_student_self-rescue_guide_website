@@ -20,6 +20,8 @@ export const categorySchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+export const categoryUpdateSchema = categorySchema.partial();
+
 export const resourceSchema = z.object({
   title: z.string().min(1),
   slug: z.string().min(1),
@@ -29,4 +31,9 @@ export const resourceSchema = z.object({
   tags: z.array(z.string()).default([]),
   categoryId: z.string().optional(),
   isPublic: z.boolean().default(true),
+});
+
+export const resourceUpdateSchema = resourceSchema.partial().extend({
+  categoryId: z.string().nullable().optional(),
+  coverImageUrl: z.string().url().nullable().optional(),
 });

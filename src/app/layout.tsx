@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/app/providers";
 import Navbar from "@/components/Navbar";
+import PageTransition from "@/components/PageTransition";
+import RouteProgress from "@/components/RouteProgress";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,8 +28,9 @@ export default function RootLayout({
     <html lang="zh-CN">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
+          <RouteProgress />
           <Navbar />
-          {children}
+          <PageTransition>{children}</PageTransition>
         </Providers>
       </body>
     </html>

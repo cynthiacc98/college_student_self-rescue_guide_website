@@ -35,15 +35,15 @@ export default function RegisterPage() {
       >
         <div>
           <label className="block text-sm mb-1">邮箱</label>
-          <input className="w-full border rounded-md px-3 py-2" placeholder="you@example.com" {...register("email")}/>
+          <input className="w-full border rounded-md px-3 py-2" placeholder="you@example.com" autoComplete="email" autoFocus {...register("email")}/>
         </div>
         <div>
           <label className="block text-sm mb-1">昵称</label>
-          <input className="w-full border rounded-md px-3 py-2" placeholder="张三" {...register("name")}/>
+          <input className="w-full border rounded-md px-3 py-2" placeholder="张三" autoComplete="name" {...register("name")}/>
         </div>
         <div>
           <label className="block text-sm mb-1">密码</label>
-          <input type="password" className="w-full border rounded-md px-3 py-2" placeholder="******" {...register("password")}/>
+          <input type="password" className="w-full border rounded-md px-3 py-2" placeholder="******" autoComplete="new-password" {...register("password")}/>
         </div>
         <button disabled={isSubmitting} className="w-full px-4 py-2 rounded-md border bg-black text-white disabled:opacity-60">
           {isSubmitting ? "注册中..." : "注册"}

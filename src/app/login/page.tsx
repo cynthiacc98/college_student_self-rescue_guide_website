@@ -32,11 +32,11 @@ function LoginInner() {
       >
         <div>
           <label className="block text-sm mb-1">邮箱</label>
-          <input className="w-full border rounded-md px-3 py-2" placeholder="you@example.com" {...register("email")}/>
+          <input className="w-full border rounded-md px-3 py-2" placeholder="you@example.com" autoComplete="email" autoFocus {...register("email")}/>
         </div>
         <div>
           <label className="block text-sm mb-1">密码</label>
-          <input type="password" className="w-full border rounded-md px-3 py-2" placeholder="******" {...register("password")}/>
+          <input type="password" className="w-full border rounded-md px-3 py-2" placeholder="******" autoComplete="current-password" {...register("password")}/>
         </div>
         <button disabled={isSubmitting} className="w-full px-4 py-2 rounded-md border bg-black text-white disabled:opacity-60">
           {isSubmitting ? "登录中..." : "登录"}

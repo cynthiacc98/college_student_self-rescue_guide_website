@@ -1,26 +1,71 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b0c0f;
+  --foreground: #e7e9ee;
+  --muted: #9aa3b2;
+  --card: #0e1014;
+  --border: #1a1d24;
+  --ring: #7c5cff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --radius: 14px;
+  --shadow-elev-1: 0 1px 2px rgba(0,0,0,0.24), 0 8px 24px rgba(0,0,0,0.28);
+  --shadow-elev-2: 0 2px 4px rgba(0,0,0,0.24), 0 14px 32px rgba(0,0,0,0.32);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #111318;
+    --muted: #5b6472;
+    --card: #ffffff;
+    --border: #e6e8ef;
+    --ring: #6b4eff;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html, body {
+  height: 100%;
 }
+
+body {
+  background: radial-gradient(1200px 800px at 50% -10%, rgba(124,92,255,0.18), transparent 60%), var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  text-rendering: optimizeLegibility;
+}
+
+* { border-color: var(--border) }
+
+.a11y-focus:focus-visible, :where(button, [role="button"], a, input, textarea, select):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 30%, transparent);
+  border-radius: calc(var(--radius) - 4px);
+}
+
+.container-page { max-width: 80rem; margin-inline: auto; padding-inline: 1rem }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: calc(var(--radius) - 6px); border: 1px solid var(--border); padding: .5rem .875rem; font-weight: 500; transition: all .2s ease; }
+.btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-elev-1) }
+.btn:active { transform: translateY(0) }
+.btn-primary { color: #fff; background: linear-gradient(135deg, #1f1fdd, #7c5cff); border-color: transparent }
+.btn-primary:hover { box-shadow: var(--shadow-elev-2) }
+.btn-ghost { background: color-mix(in oklab, var(--foreground) 3%, transparent) }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 1px 0 rgba(255,255,255,0.025) inset }
+.card-elev { box-shadow: var(--shadow-elev-1) }
+
+h1 { font-size: clamp(2rem, 1.4rem + 2vw, 3rem); letter-spacing: -0.02em }
+h2 { font-size: clamp(1.25rem, 1rem + 1vw, 1.5rem); letter-spacing: -0.015em }
+
+::selection { background: color-mix(in oklab, var(--ring) 32%, transparent) }

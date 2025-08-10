@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { notFound, redirect } from "next/navigation";
+import Image from "next/image";
 
 export default async function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -22,9 +23,16 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 grid md:grid-cols-2 gap-8">
       <div>
-        <div className="aspect-[4/3] bg-neutral-100 rounded-lg overflow-hidden">
+        <div className="aspect-[4/3] bg-neutral-100 rounded-lg overflow-hidden relative">
           {resource.coverImageUrl ? (
-            <img src={resource.coverImageUrl} alt={resource.title} className="h-full w-full object-cover" />
+            <Image
+              src={resource.coverImageUrl}
+              alt={resource.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              unoptimized
+            />
           ) : (
             <div className="h-full w-full grid place-items-center text-neutral-400">无封面</div>
           )}
@@ -43,11 +51,11 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
         <div className="mt-6">
           <a
             className="inline-flex items-center gap-2 px-4 py-2 rounded-md border bg-black text-white hover:bg-neutral-800"
-            href={resource.quarkLink}
+            href={`/api/resources/${id}/click`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            打开夸克网盘链接
+            打开夸克网盘链接（计次）
           </a>
         </div>
       </div>
