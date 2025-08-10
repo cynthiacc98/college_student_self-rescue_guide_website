@@ -34,8 +34,11 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ id: String(result.insertedId), role }, { status: 201 });
-  } catch (e) {
-    console.error(e);
+  } catch (e: any) {
+    console.error("REGISTER_ERROR", e);
+    if (process.env.NODE_ENV !== "production") {
+      return NextResponse.json({ error: String(e?.message || e) }, { status: 500 });
+    }
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
