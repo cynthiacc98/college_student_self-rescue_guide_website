@@ -22,9 +22,9 @@ export default function ResourceCard({ id, title, coverImageUrl }: ResourceCardP
       initial={prefersReduced ? { opacity: 1 } : { opacity: 0, y: 12 }}
       animate={prefersReduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      whileHover={prefersReduced ? undefined : { y: -2, boxShadow: "0 6px 24px rgba(0,0,0,0.08)" }}
+      whileHover={prefersReduced ? undefined : { y: -2, boxShadow: "var(--shadow-elev-1)" }}
       whileTap={prefersReduced ? undefined : { scale: 0.98 }}
-      className="group cursor-pointer select-none overflow-hidden rounded-xl border bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+      className="group cursor-pointer select-none overflow-hidden card"
       onClick={() => {
         if (!session?.user) {
           toast("请先登录", { icon: "🔒" });
@@ -40,7 +40,7 @@ export default function ResourceCard({ id, title, coverImageUrl }: ResourceCardP
         if (e.key === "Enter") (e.currentTarget as HTMLDivElement).click();
       }}
     >
-      <div className="aspect-[4/3] w-full bg-neutral-100 relative">
+      <div className="aspect-[4/3] w-full bg-neutral-900 relative">
         {coverImageUrl ? (
           <Image
             src={coverImageUrl}
@@ -52,12 +52,13 @@ export default function ResourceCard({ id, title, coverImageUrl }: ResourceCardP
             priority={false}
           />
         ) : (
-          <div className="h-full w-full grid place-items-center text-neutral-400">无封面</div>
+          <div className="h-full w-full grid place-items-center text-neutral-500">无封面</div>
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%)", maskImage: "linear-gradient(#000, #000)" }} />
       </div>
       <div className="p-3">
-        <h3 className="line-clamp-2 text-sm font-medium text-neutral-900 group-hover:text-black">{title}</h3>
+        <h3 className="line-clamp-2 text-sm font-medium text-foreground/95 group-hover:text-foreground">{title}</h3>
       </div>
     </motion.div>
   );
