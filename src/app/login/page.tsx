@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@/lib/validators";
@@ -8,7 +9,7 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
-export default function LoginPage() {
+function LoginInner() {
   const search = useSearchParams();
   const callbackUrl = search.get("callbackUrl") || "/";
   const { register, handleSubmit, formState: { isSubmitting } } = useForm<z.infer<typeof loginSchema>>({
@@ -43,5 +44,13 @@ export default function LoginPage() {
       </form>
       <p className="text-sm text-neutral-600 mt-4">没有账号？<a href="/register" className="underline">注册</a></p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginInner />
+    </Suspense>
   );
 }

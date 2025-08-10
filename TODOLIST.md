@@ -3,21 +3,21 @@
 ## 里程碑 M0：项目初始化（当天）
 - [x] 初始化 Next.js + TS + Tailwind + ESLint
 - [x] 安装 Prisma、NextAuth、MongoDB、UI/动效/表单依赖
-- [ ] 定义 Prisma Schema（Category/Resource/ResourceStat）
-- [ ] 提交初始 Git 提交
+- [x] 定义 Prisma Schema（Category/Resource/ResourceStat）
+- [x] 提交初始 Git 提交
 
 ## 里程碑 M1：基础架构打通（1-2 天）
-- [ ] `.env.example`、环境变量校验
-- [ ] `src/lib/mongodb.ts`、`src/lib/prisma.ts`
-- [ ] NextAuth 配置：Credentials Provider + MongoDB Adapter
-- [ ] 注册接口 `/api/register`（加密存储密码，首个用户设为 ADMIN）
-- [ ] 中间件保护 `/admin/*`（基于 token.role）
-- [ ] Prisma generate / db push（本地或云端）
+- [x] `.env.example`、环境变量校验（本地 MongoDB 示例连接，需提供 `NEXTAUTH_SECRET`）
+- [x] `src/lib/mongodb.ts`、`src/lib/prisma.ts`
+- [x] NextAuth 配置：Credentials Provider + MongoDB Adapter（JWT Session）
+- [x] 注册接口 `/api/register`（加密存储密码，首个用户设为 ADMIN）
+- [x] 中间件保护 `/admin/*`（基于 token.role）
+- [x] Prisma generate（MongoDB 模式，无迁移），构建通过
 
 ## 里程碑 M2：页面骨架与导航（1-2 天）
-- [ ] 全局布局与 Providers（SessionProvider、Toaster）
-- [ ] `Navbar`（搜索框、登录状态）
-- [ ] 首页：英雄区 + 热门/最新资料网格 + 分类入口
+- [x] 全局布局与 Providers（SessionProvider、Toaster）
+- [x] `Navbar`（搜索框、登录状态）
+- [x] 首页：英雄区 + 热门/最新资料网格（占位）+ 分类入口（链接占位）
 - [ ] 资源列表/详情页：未登录拦截 + 详情页服务端保护
 - [ ] 搜索页：关键字+分类+排序，分页
 - [ ] 分类页：列表筛选
