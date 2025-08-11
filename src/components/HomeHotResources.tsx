@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import ResourceCard from "@/components/ResourceCard";
-import clientPromise from "@/lib/mongodb";
+import IntersectionReveal, { RevealStaggerChild } from "@/components/IntersectionReveal";
 
 type HotResource = {
   id: string;
@@ -19,28 +19,27 @@ type HotResource = {
   };
 };
 
-interface ResourceStat {
-  resourceId: string;
-  clicks: number;
-}
 
 export default async function HomeHotResources() {
   let resources: HotResource[] = [];
 
   try {
-    // Try to get resources sorted by clicks
-    const client = await clientPromise;
-    const db = client.db();
-    const stats = (await db
-      .collection("ResourceStat")
-      .find({ clicks: { $gt: 0 } })
-      .sort({ clicks: -1 })
-      .limit(8)
-      .toArray()) as unknown as ResourceStat[];
+    // 首先尝试获取有统计数据的热门资源
+    const statsWithResources = await prisma.resourceStat.findMany({
+      where: {
+        clicks: { gt: 0 }
+      },
+      orderBy: { clicks: 'desc' },
+      take: 8,
+      select: {
+        resourceId: true,
+        clicks: true
+      }
+    });
 
-    if (stats.length > 0) {
-      const resourceIds = stats.map((s) => s.resourceId.toString());
-      const clicksMap = new Map(stats.map((s) => [s.resourceId.toString(), s.clicks]));
+    if (statsWithResources.length > 0) {
+      const resourceIds = statsWithResources.map(s => s.resourceId);
+      const clicksMap = new Map(statsWithResources.map(s => [s.resourceId, s.clicks]));
       
       const dbResources = await prisma.resource.findMany({
         where: {
@@ -67,31 +66,35 @@ export default async function HomeHotResources() {
         .sort((a, b) => (b._count?.clicks ?? 0) - (a._count?.clicks ?? 0));
     }
   } catch (error) {
-    console.error("Failed to fetch hot resources:", error);
+    console.error("获取热门资源失败:", error);
   }
 
-  // Fallback to latest resources if no click data
+  // 如果没有热门数据，回退到最新资源
   if (resources.length === 0) {
-    const latestResources = await prisma.resource.findMany({
-      where: { isPublic: true },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        coverImageUrl: true,
-        tags: true,
-        isPublic: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-    });
-    
-    resources = latestResources.map((r): HotResource => ({
-      ...r,
-      updatedAt: r.updatedAt.toISOString(),
-      _count: { clicks: 0 },
-    }));
+    try {
+      const latestResources = await prisma.resource.findMany({
+        where: { isPublic: true },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          coverImageUrl: true,
+          tags: true,
+          isPublic: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      });
+      
+      resources = latestResources.map((r): HotResource => ({
+        ...r,
+        updatedAt: r.updatedAt.toISOString(),
+        _count: { clicks: 0 },
+      }));
+    } catch (error) {
+      console.error("获取最新资源失败:", error);
+    }
   }
 
   if (resources.length === 0) {
@@ -103,10 +106,24 @@ export default async function HomeHotResources() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {resources.map((resource, index) => (
-        <ResourceCard key={resource.id} resource={resource} index={index} />
-      ))}
-    </div>
+    <IntersectionReveal
+      direction="up"
+      timing="medium"
+      enableStagger={true}
+      staggerChildren={0.1}
+      threshold={0.1}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {resources.map((resource, index) => (
+          <RevealStaggerChild 
+            key={resource.id}
+            direction="up"
+            distance={50}
+          >
+            <ResourceCard resource={resource} index={index} />
+          </RevealStaggerChild>
+        ))}
+      </div>
+    </IntersectionReveal>
   );
 }

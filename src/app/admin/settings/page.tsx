@@ -1,10 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
-import { redirect } from "next/navigation";
 import SettingsManager from "@/components/admin/SettingsManager";
 import clientPromise from "@/lib/mongodb";
+import { requireAdminAuth } from "@/lib/admin-auth";
 
 interface SystemSettings {
   siteName: string;
@@ -39,10 +37,7 @@ async function getSystemSettings(): Promise<SystemSettings> {
 }
 
 export default async function SettingsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    redirect("/login");
-  }
+  await requireAdminAuth("/admin/settings");
 
   const settings = await getSystemSettings();
 

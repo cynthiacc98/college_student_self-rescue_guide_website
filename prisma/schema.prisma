@@ -15,9 +15,14 @@ model Category {
   name        String
   slug        String   @unique
   description String?
+  iconUrl     String?
+  color       String?  // 主题色
   parentId    String?  @db.ObjectId
   order       Int      @default(0)
+  resourceCount Int    @default(0)
+  viewCount   Int      @default(0)
   isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -31,9 +36,26 @@ model Resource {
   quarkLink     String
   tags          String[]
   categoryId    String?   @db.ObjectId
+  authorId      String?   @db.ObjectId
+  difficulty    String?   // BEGINNER, INTERMEDIATE, ADVANCED
+  fileSize      String?
+  fileFormat    String?
+  downloadCount Int       @default(0)
+  rating        Float?    @default(0)
+  reviewCount   Int       @default(0)
+  favoriteCount Int       @default(0)
   isPublic      Boolean   @default(true)
+  isFeatured    Boolean   @default(false)
+  status        String    @default("ACTIVE") // ACTIVE, PENDING, REJECTED, ARCHIVED
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([createdAt])
+  @@fulltext([title, description, tags])
 }
 
 model ResourceStat {
@@ -44,4 +66,177 @@ model ResourceStat {
   likes      Int      @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// 用户权限相关模型
+model Role {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
+  displayName String
+  description String?
+  permissions String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserRole {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  roleId    String   @db.ObjectId
+  assignedBy String? @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, roleId])
+}
+
+// 操作日志模型
+model AuditLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT
+  resource    String   // users, resources, categories
+  resourceId  String?  @db.ObjectId
+  oldData     Json?
+  newData     Json?
+  ipAddress   String?
+  userAgent   String?
+  status      String   // SUCCESS, FAILED
+  errorMessage String?
+  createdAt   DateTime @default(now())
+}
+
+// 系统设置模型
+model Setting {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique
+  value     Json
+  category  String   // SYSTEM, UI, SECURITY, EMAIL
+  description String?
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 数据分析模型
+model Analytics {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  type         String   // DAILY, WEEKLY, MONTHLY
+  date         DateTime
+  resourceViews     Int @default(0)
+  resourceClicks    Int @default(0)
+  resourceLikes     Int @default(0)
+  userRegistrations Int @default(0)
+  userLogins        Int @default(0)
+  activeUsers       Int @default(0)
+  categoryViews     Json // { categoryId: count }
+  topResources      Json // [{ resourceId, views, clicks }]
+  deviceStats       Json // { mobile, desktop, tablet }
+  locationStats     Json // { country: count }
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([type, date])
+}
+
+// 用户行为追踪
+model UserActivity {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String?  @db.ObjectId
+  sessionId    String
+  action       String   // VIEW, CLICK, SEARCH, DOWNLOAD
+  resourceId   String?  @db.ObjectId
+  categoryId   String?  @db.ObjectId
+  searchQuery  String?
+  page         String
+  referrer     String?
+  ipAddress    String
+  userAgent    String
+  deviceType   String?  // mobile, desktop, tablet
+  country      String?
+  city         String?
+  duration     Int?     // 页面停留时间（秒）
+  createdAt    DateTime @default(now())
+}
+
+// 导入导出任务
+model ImportExportTask {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  type         String   // IMPORT, EXPORT
+  resource     String   // resources, users, categories
+  status       String   // PENDING, PROCESSING, COMPLETED, FAILED
+  fileName     String?
+  filePath     String?
+  recordsTotal Int?     @default(0)
+  recordsProcessed Int? @default(0)
+  recordsSuccess   Int? @default(0)
+  recordsError     Int? @default(0)
+  errorLog     Json?
+  metadata     Json?    // 额外配置信息
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// 用户收藏
+model UserFavorites {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  resourceId String   @db.ObjectId
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, resourceId])
+  @@index([userId])
+  @@index([resourceId])
+}
+
+// 资源评论
+model ResourceComment {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  resourceId String   @db.ObjectId
+  userId     String   @db.ObjectId
+  content    String
+  rating     Int?     // 1-5星评分
+  parentId   String?  @db.ObjectId // 用于回复评论
+  status     String   @default("ACTIVE") // ACTIVE, HIDDEN, DELETED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([resourceId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+// 下载记录
+model DownloadRecord {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  resourceId String   @db.ObjectId
+  userId     String?  @db.ObjectId // 可能是匿名用户
+  ipAddress  String
+  userAgent  String?
+  downloadAt DateTime @default(now())
+
+  @@index([resourceId])
+  @@index([userId])
+  @@index([downloadAt])
+}
+
+// 资源举报
+model ResourceReport {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  resourceId String   @db.ObjectId
+  userId     String   @db.ObjectId
+  reason     String   // COPYRIGHT, INAPPROPRIATE, SPAM, OTHER
+  description String?
+  status     String   @default("PENDING") // PENDING, REVIEWED, RESOLVED
+  reviewedBy String?  @db.ObjectId
+  reviewedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([resourceId])
+  @@index([userId])
+  @@index([status])
 }

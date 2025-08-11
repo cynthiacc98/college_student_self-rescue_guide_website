@@ -1,8 +1,6 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import NewResourceForm from "@/components/admin/NewResourceForm";
+import { requireAdminAuth } from "@/lib/admin-auth";
 
 async function getCategories() {
   return await prisma.category.findMany({
@@ -12,10 +10,7 @@ async function getCategories() {
 }
 
 export default async function NewResourcePage() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
-    redirect("/login");
-  }
+  await requireAdminAuth("/admin/resources/new");
 
   const categories = await getCategories();
 

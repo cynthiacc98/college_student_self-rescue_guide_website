@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { requireAdminAuth } from "@/lib/admin-auth";
 
 export default async function EditResourcePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
+  await requireAdminAuth("/admin/resources");
   const { id } = await params;
   const sp = await searchParams;
   const [resource, categories] = await Promise.all([

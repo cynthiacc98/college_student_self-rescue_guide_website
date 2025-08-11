@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import ResourcesManager, { AdminResource } from "@/components/admin/ResourcesManager";
+import { requireAdminAuth } from "@/lib/admin-auth";
 
 export default async function AdminResourcesPage() {
+  await requireAdminAuth("/admin/resources");
   const resources = await prisma.resource.findMany({ 
     orderBy: { createdAt: "desc" }, 
     select: { id: true, title: true, slug: true, isPublic: true, createdAt: true } 

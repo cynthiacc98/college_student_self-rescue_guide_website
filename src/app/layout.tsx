@@ -3,9 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/app/providers";
 import NavbarWrapper from "@/components/NavbarWrapper";
-import PageTransition from "@/components/PageTransition";
+import PageTransitionEnhanced from "@/components/PageTransitionEnhanced";
 import RouteProgress from "@/components/RouteProgress";
-import clientPromise from "@/lib/mongodb";
+import { getBasicSettings } from "@/lib/settings";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,27 +17,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-async function getSystemSettings() {
-  try {
-    const client = await clientPromise;
-    const db = client.db();
-    const settings = await db.collection("settings").findOne({ type: "system" });
-    
-    return {
-      siteName: settings?.config?.siteName || "大学生自救指南",
-      siteDescription: settings?.config?.siteDescription || "高质量学习资料分享与检索平台",
-    };
-  } catch (error) {
-    console.error("Failed to load settings:", error);
-    return {
-      siteName: "大学生自救指南",
-      siteDescription: "高质量学习资料分享与检索平台",
-    };
-  }
-}
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSystemSettings();
+  const settings = await getBasicSettings();
   
   return {
     title: settings.siteName,
@@ -54,7 +36,7 @@ export default function RootLayout({
         <Providers>
           <RouteProgress />
           <NavbarWrapper />
-          <PageTransition>{children}</PageTransition>
+          <PageTransitionEnhanced>{children}</PageTransitionEnhanced>
         </Providers>
       </body>
     </html>

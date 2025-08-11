@@ -177,7 +177,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <div className="flex items-center gap-2 mt-1">
                     <Sparkles className="w-3 h-3 text-purple-400" />
                     <span className="text-xs text-foreground-subtle">
-                      SOTA Admin System v2.0
+                      管理后台系统 v2.0
                     </span>
                   </div>
                 </div>

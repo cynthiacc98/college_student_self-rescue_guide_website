@@ -19,9 +19,12 @@ export default function Navbar({ siteName }: NavbarProps) {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
-  const headerY = useTransform(scrollY, [0, 100], [0, -10]);
-  const headerBlur = useTransform(scrollY, [0, 50], [20, 30]);
-  const headerOpacity = useTransform(scrollY, [0, 50], [0.7, 0.95]);
+  const headerY = useTransform(scrollY, [0, 100], [0, -5]);
+  const headerBlur = useTransform(scrollY, [0, 50, 200], ["blur(20px) saturate(180%)", "blur(30px) saturate(180%)", "blur(40px) saturate(180%)"]);
+  const headerOpacity = useTransform(scrollY, [0, 50, 200], [0.7, 0.95, 0.98]);
+  const headerScale = useTransform(scrollY, [0, 100], [1, 0.98]);
+  const borderOpacity = useTransform(scrollY, [0, 50, 200], [0.2, 0.4, 0.6]);
+  const shadowIntensity = useTransform(scrollY, [0, 100], [0, 0.3]);
   const headerRef = useRef<HTMLDivElement>(null);
 
   const palettes: Array<[string, string, string, string]> = [
@@ -90,18 +93,43 @@ export default function Navbar({ siteName }: NavbarProps) {
     <>
       <div ref={headerRef} className="fixed top-0 left-0 right-0 z-[100]">
         <motion.header
-          style={{ y: headerY }}
-          className="border-b border-white/5"
+          style={{ 
+            y: headerY,
+            scale: headerScale
+          }}
+          className="border-b border-white/5 relative overflow-hidden"
         >
+          {/* 增强毛玻璃背景 */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/40"
+            className="absolute inset-0"
             style={{ 
-              backdropFilter: `blur(${headerBlur}px)`,
-              WebkitBackdropFilter: `blur(${headerBlur}px)`,
-              opacity: headerOpacity 
+              background: `linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.85) 0%, 
+                rgba(20, 25, 40, 0.9) 50%, 
+                rgba(0, 0, 0, 0.85) 100%)`,
+              backdropFilter: headerBlur,
+              webkitBackdropFilter: headerBlur,
+              opacity: headerOpacity
             }}
           />
-          <div className="absolute bottom-0 left-0 right-0 h-px brand-gradient opacity-40 pointer-events-none" />
+          
+          {/* 动态边框渐变 */}
+          <motion.div 
+            className="absolute bottom-0 left-0 right-0 h-px brand-gradient pointer-events-none"
+            style={{ opacity: borderOpacity }}
+          />
+          
+          {/* 顶部光效 */}
+          <motion.div
+            className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            style={{ opacity: borderOpacity }}
+          />
+          
+          {/* 动态阴影 */}
+          <motion.div
+            className="absolute -bottom-4 left-0 right-0 h-4 bg-gradient-to-b from-black/20 to-transparent blur-sm"
+            style={{ opacity: shadowIntensity }}
+          />
           
           <nav className="relative container-fluid py-5">
             <div className="flex items-center justify-between gap-4">
@@ -122,7 +150,7 @@ export default function Navbar({ siteName }: NavbarProps) {
                     {siteName}
                   </div>
                   <div className="text-xs text-foreground-subtle">
-                    SOTA Learning Platform
+                    学习资料分享平台
                   </div>
                 </div>
               </Link>
@@ -161,10 +189,41 @@ export default function Navbar({ siteName }: NavbarProps) {
               <div className="flex items-center gap-2">
                 <div className="flex-1 max-w-md hidden md:block">
                   <form onSubmit={handleSearch} className="relative group">
-                    <div className={`absolute inset-0 brand-gradient rounded-2xl blur-xl transition-all duration-300 ${
-                      isSearchFocused ? "opacity-100 scale-110" : "opacity-0 scale-100"
-                    }`} />
-                    <div className="relative flex items-center">
+                    {/* 增强光晕效果 */}
+                    <motion.div 
+                      className="absolute inset-0 rounded-2xl blur-xl pointer-events-none"
+                      animate={{
+                        background: isSearchFocused ? 
+                          `conic-gradient(from 0deg, ${palettes[paletteIdx][0]}40, ${palettes[paletteIdx][1]}40, ${palettes[paletteIdx][2]}40, ${palettes[paletteIdx][3]}40, ${palettes[paletteIdx][0]}40)` :
+                          'transparent',
+                        scale: isSearchFocused ? 1.15 : 1,
+                        opacity: isSearchFocused ? 1 : 0
+                      }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    />
+                    
+                    <motion.div 
+                      className="relative flex items-center overflow-hidden rounded-2xl"
+                      animate={{
+                        scale: isSearchFocused ? 1.02 : 1
+                      }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
+                      {/* 背景效果 */}
+                      <motion.div
+                        className="absolute inset-0 backdrop-blur-xl border rounded-2xl"
+                        animate={{
+                          background: isSearchFocused ? 
+                            'rgba(255, 255, 255, 0.15)' : 
+                            'rgba(255, 255, 255, 0.08)',
+                          borderColor: isSearchFocused ?
+                            'rgba(255, 255, 255, 0.3)' :
+                            'rgba(255, 255, 255, 0.1)'
+                        }}
+                        transition={{ duration: 0.2 }}
+                      />
+                      
+                      {/* 输入框 */}
                       <input
                         type="search"
                         value={searchQuery}
@@ -172,24 +231,52 @@ export default function Navbar({ siteName }: NavbarProps) {
                         onFocus={() => setIsSearchFocused(true)}
                         onBlur={() => setIsSearchFocused(false)}
                         placeholder="搜索学习资料..."
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-white/40 transition-all focus:bg-white/10 focus:border-white/20 focus:outline-none"
+                        className="w-full pl-12 pr-4 py-3 bg-transparent text-white placeholder-white/40 focus:outline-none relative z-10"
                         autoComplete="search"
                       />
-                      <Search className="absolute left-4 w-5 h-5 text-white/40" />
+                      
+                      {/* 搜索图标 */}
+                      <motion.div
+                        className="absolute left-4 z-10"
+                        animate={{
+                          scale: isSearchFocused ? 1.1 : 1,
+                          color: isSearchFocused ? '#ffffff' : 'rgba(255, 255, 255, 0.4)'
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Search className="w-5 h-5" />
+                      </motion.div>
+                      
+                      {/* 动态搜索按钮 */}
                       <AnimatePresence>
                         {searchQuery && (
                           <motion.button
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.8 }}
+                            initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, x: 20 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             type="submit"
-                            className="absolute right-2 px-3 py-1 brand-gradient text-white text-sm font-medium rounded-xl hover:shadow-lg transition-all"
+                            className="absolute right-2 px-4 py-1.5 brand-gradient text-white text-sm font-medium rounded-xl shadow-lg z-10 transition-all hover:shadow-xl"
                           >
                             搜索
                           </motion.button>
                         )}
                       </AnimatePresence>
-                    </div>
+                      
+                      {/* 聚焦时的波纹效果 */}
+                      <AnimatePresence>
+                        {isSearchFocused && (
+                          <motion.div
+                            className="absolute inset-0 rounded-2xl border border-white/30 pointer-events-none"
+                            initial={{ scale: 1, opacity: 0 }}
+                            animate={{ scale: 1.1, opacity: 1 }}
+                            exit={{ scale: 1, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
                   </form>
                 </div>
 

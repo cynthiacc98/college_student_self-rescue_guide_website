@@ -5,6 +5,9 @@ import { motion, useScroll, useTransform, useInView, type Transition } from "fra
 import { ArrowRight, Sparkles, Zap, BookOpen, Search, Grid3X3, TrendingUp, Users, Palette } from "lucide-react";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { useState, useRef, useEffect, type CSSProperties } from "react";
+import ParticleSystem from "@/components/ParticleSystem";
+import AdvancedParticleBookAnimation from "@/components/AdvancedParticleBookAnimation";
+import MagneticButtonEnhanced from "@/components/MagneticButtonEnhanced";
 
 interface HomeHeroProps {
   siteName: string;
@@ -15,6 +18,7 @@ export default function HomeHero({ siteName, siteDescription }: HomeHeroProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [spot, setSpot] = useState({ x: 50, y: 50 });
   const [paletteIdx, setPaletteIdx] = useState<number>(() => {
     if (typeof window === "undefined") return 0;
@@ -39,6 +43,18 @@ export default function HomeHero({ siteName, siteDescription }: HomeHeroProps) {
   // 防止水合错误
   useEffect(() => {
     setMounted(true);
+    
+    // 检测移动设备
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window));
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   // 记住配色
@@ -101,7 +117,7 @@ export default function HomeHero({ siteName, siteDescription }: HomeHeroProps) {
             </span>
             <Sparkles className="w-5 h-5 text-yellow-400" />
             <span className="text-sm font-semibold text-white">
-              SOTA 学习体验
+              优质学习资源
             </span>
           </div>
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 brand-text-gradient">
@@ -121,10 +137,19 @@ export default function HomeHero({ siteName, siteDescription }: HomeHeroProps) {
       className="relative min-h-screen flex items-center overflow-hidden bg-[#0B1221]"
       onMouseMove={handleMouseMove}
     >
+      {/* 粒子系统背景 */}
+      <ParticleSystem 
+        className="-z-20"
+        enableMouseInteraction={true}
+        enableBookAnimation={true}
+        autoTriggerPageFlip={true}
+        enablePerformanceDisplay={false}
+      />
+
       {/* Aurora 背景 */}
       <motion.div
         className="absolute inset-0 -z-10"
-        style={{ y, scale, ...({
+        style={{ y, scale, ...({ 
           "--x": `${spot.x}%`,
           "--y": `${spot.y}%`,
           "--c1": palette[0],
@@ -148,16 +173,81 @@ export default function HomeHero({ siteName, siteDescription }: HomeHeroProps) {
         />
       </motion.div>
 
-      {/* 配色切换器 */}
-
-      {/* 装饰图标 */}
+      {/* 高级配色切换器 */}
       <motion.div
-        className="absolute top-1/4 right-1/4 text-white/30"
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={isInView ? { ...floatAnimation, opacity: 0.3, scale: 1 } : { opacity: 0, scale: 0.5 }}
-        transition={{ delay: 0.5 }}
+        className="absolute top-8 right-8 z-20"
+        initial={{ opacity: 0, scale: 0.5, rotate: -90 }}
+        animate={{ opacity: 1, scale: 1, rotate: 0 }}
+        transition={{ delay: 2.5, duration: 0.8, type: "spring", stiffness: 200 }}
       >
-        <BookOpen size={60} />
+        <motion.button
+          onClick={() => setPaletteIdx((p) => (p + 1) % palettes.length)}
+          className="relative group flex items-center gap-3 px-5 py-3 backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-all shadow-xl overflow-hidden"
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          onHoverStart={() => setHoveredElement('palette')}
+          onHoverEnd={() => setHoveredElement(null)}
+        >
+          <motion.div
+            className="absolute inset-0 brand-gradient opacity-0"
+            whileHover={{ opacity: 0.1 }}
+            transition={{ duration: 0.3 }}
+          />
+          
+          {/* 彩虹旋转图标 */}
+          <motion.div
+            className="relative w-6 h-6 rounded-full"
+            animate={{ 
+              background: `conic-gradient(from 0deg, ${palette[0]}, ${palette[1]}, ${palette[2]}, ${palette[3]}, ${palette[0]})`,
+              rotate: hoveredElement === 'palette' ? 360 : 0
+            }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+          >
+            <motion.div
+              className="absolute inset-1 rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center"
+              animate={{ rotate: hoveredElement === 'palette' ? -360 : 0 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+            >
+              <Palette className="w-3 h-3 text-white" />
+            </motion.div>
+          </motion.div>
+          
+          <span className="text-sm font-medium text-white/90 relative z-10">
+            配色 {paletteIdx + 1}/{palettes.length}
+          </span>
+          
+          {/* 悬浮光效 */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 opacity-0"
+            animate={hoveredElement === 'palette' ? {
+              x: ["-100%", "100%"],
+              opacity: [0, 1, 0],
+              transition: { duration: 0.6 }
+            } : {}}
+          />
+        </motion.button>
+      </motion.div>
+
+      {/* 震撼粒子书本动画 */}
+      <motion.div
+        className="absolute top-1/2 right-0 transform -translate-y-1/2 z-10"
+        initial={{ opacity: 0, scale: 0.8, x: 100 }}
+        animate={isInView ? { 
+          opacity: 1, 
+          scale: 1,
+          x: 0
+        } : { opacity: 0, scale: 0.8, x: 100 }}
+        transition={{ delay: 0.5, duration: 1.5, ease: "easeOut" }}
+      >
+        <AdvancedParticleBookAnimation 
+          width={600}
+          height={400}
+          particleCount={1000}
+          enableMouseInteraction={!isMobile}
+          onAnimationComplete={() => {
+            console.log('粒子书本动画完成！');
+          }}
+        />
       </motion.div>
       <motion.div
         className="absolute bottom-1/3 left-1/5 text-white/25"
@@ -228,7 +318,7 @@ export default function HomeHero({ siteName, siteDescription }: HomeHeroProps) {
           </motion.span>
           <Sparkles className="w-5 h-5 text-yellow-400" />
           <span className="text-sm font-semibold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent relative z-10">
-            SOTA 学习体验
+            优质学习资源
           </span>
           <motion.div
             animate={{ rotate: 360 }}
@@ -377,72 +467,50 @@ export default function HomeHero({ siteName, siteDescription }: HomeHeroProps) {
           variants={staggerItem}
           className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start"
         >
-          {/* 主CTA */}
-          <motion.div
-            whileHover={{ scale: 1.05, y: -3 }}
-            whileTap={{ scale: 0.98 }}
-            onHoverStart={() => setHoveredElement('search-btn')}
-            onHoverEnd={() => setHoveredElement(null)}
+          {/* 主 CTA - 磁性按钮 */}
+          <MagneticButtonEnhanced
+            href="/search"
+            variant="primary"
+            size="lg"
+            strength={0.4}
+            maxDistance={120}
+            glowEffect={true}
+            rippleEffect={true}
+            className="brand-gradient text-white font-semibold shadow-2xl"
           >
-            <Link
-              href="/search"
-              className="group relative inline-flex items-center gap-3 px-8 py-4 brand-gradient text-white font-semibold rounded-2xl shadow-2xl overflow-hidden"
-            >
-              <motion.div
-                className="absolute inset-0 brand-gradient opacity-0"
-                whileHover={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              />
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 opacity-0"
-                animate={hoveredElement === 'search-btn' ? {
-                  x: ["-100%", "100%"],
-                  opacity: [0, 1, 0],
-                  transition: { duration: 0.6 }
-                } : {}}
-              />
-              <Search className="w-5 h-5 relative z-10" />
-              <span className="relative z-10">立即搜索</span>
-              <motion.div
-                animate={{ x: hoveredElement === 'search-btn' ? 5 : 0 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <ArrowRight className="w-5 h-5 relative z-10" />
-              </motion.div>
-            </Link>
-          </motion.div>
+            <Search className="w-5 h-5" />
+            <span>立即搜索</span>
+            <ArrowRight className="w-5 h-5" />
+          </MagneticButtonEnhanced>
 
-          {/* 辅助按钮 */}
-          <motion.div className="flex gap-3">
+          {/* 辅助按钮 - 磁性按钮 */}
+          <div className="flex gap-4">
             {[
               { href: "/categories", label: "浏览分类", icon: Grid3X3 },
               { href: "/resources", label: "所有资料", icon: BookOpen }
             ].map((btn, index) => (
               <motion.div
                 key={btn.href}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.98 }}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1 + index * 0.1 }}
               >
-                <Link
+                <MagneticButtonEnhanced
                   href={btn.href}
-                  className="relative inline-flex items-center gap-2 px-6 py-4 backdrop-blur-md bg-white/10 text-white font-medium rounded-2xl border border-white/20 hover:bg-white/15 transition-all shadow-xl overflow-hidden group"
-                  onMouseEnter={() => setHoveredElement(`${btn.href}-btn`)}
-                  onMouseLeave={() => setHoveredElement(null)}
+                  variant="glass"
+                  size="md"
+                  strength={0.2}
+                  maxDistance={80}
+                  glowEffect={false}
+                  rippleEffect={true}
+                  className="text-white border border-white/20 shadow-xl"
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0"
-                    whileHover={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  <btn.icon className="w-4 h-4 relative z-10" />
-                  <span className="relative z-10">{btn.label}</span>
-                </Link>
+                  <btn.icon className="w-4 h-4" />
+                  <span>{btn.label}</span>
+                </MagneticButtonEnhanced>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </motion.div>
       </motion.div>
 
