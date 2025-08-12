@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { FormEvent, useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { Search, LogOut, User, Sparkles, Menu, X, Home, BookOpen, Grid3X3, Shield, Palette } from "lucide-react";
+import { Search, LogOut, User, Sparkles, Menu, X, Home, BookOpen, Grid3X3, Shield, Palette, Heart } from "lucide-react";
 
 interface NavbarProps {
   siteName: string;
@@ -72,11 +72,22 @@ export default function Navbar({ siteName }: NavbarProps) {
     }
   };
 
-  const navItems = [
-    { href: "/", label: "首页", icon: Home },
-    { href: "/resources", label: "资料库", icon: BookOpen },
-    { href: "/categories", label: "分类", icon: Grid3X3 },
-  ];
+  const getNavItems = () => {
+    const baseItems = [
+      { href: "/", label: "首页", icon: Home },
+      { href: "/resources", label: "资料库", icon: BookOpen },
+      { href: "/categories", label: "分类", icon: Grid3X3 },
+    ];
+    
+    // 只有已登录用户才显示收藏页面
+    if (session) {
+      baseItems.push({ href: "/favorites", label: "我的收藏", icon: Heart });
+    }
+    
+    return baseItems;
+  };
+  
+  const navItems = getNavItems();
 
   useEffect(() => {
     if (isMobileMenuOpen) {

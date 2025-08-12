@@ -6,14 +6,39 @@ import { authOptions } from "@/lib/auth-options";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { Types } from "mongoose";
+import ResourceViewTracker from "@/components/ResourceViewTracker";
+import ResourceActions from "@/components/ResourceActions";
+import ResourceRating from "@/components/ResourceRating";
+import ResourceComments from "@/components/ResourceComments";
+
+// 检查字符串是否为有效的 MongoDB ObjectId
+function isValidObjectId(id: string): boolean {
+  return Types.ObjectId.isValid(id) && /^[0-9a-fA-F]{24}$/.test(id);
+}
 
 export default async function ResourceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
-  const resource = await prisma.resource.findUnique({
-    where: { id },
-  });
+  // 根据 id 格式决定查询方式
+  let resource;
+  try {
+    if (isValidObjectId(id)) {
+      // 如果是有效的 ObjectId，按 id 查询
+      resource = await prisma.resource.findUnique({
+        where: { id },
+      });
+    } else {
+      // 否则按 slug 查询
+      resource = await prisma.resource.findUnique({
+        where: { slug: id },
+      });
+    }
+  } catch (error) {
+    console.error("Resource query error:", error);
+    return notFound();
+  }
   
   if (!resource) {
     return notFound();
@@ -24,62 +49,74 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
     return notFound();
   }
 
-  // If user is not logged in for a public resource, show login prompt
-  if (!session) {
-    return (
-      <div className="mx-auto max-w-5xl px-4 py-10">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">需要登录</h1>
-          <p className="text-muted-foreground mb-6">请登录后查看资源详情</p>
-          <Link 
-            href={`/login?callbackUrl=/resources/${id}`}
-            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          >
-            立即登录
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 grid md:grid-cols-2 gap-8">
-      <div>
-        <div className="aspect-[4/3] bg-neutral-100 rounded-lg overflow-hidden relative">
-          {resource.coverImageUrl ? (
-            <Image
-              src={resource.coverImageUrl}
-              alt={resource.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              unoptimized
-            />
-          ) : (
-            <div className="h-full w-full grid place-items-center text-neutral-400">无封面</div>
-          )}
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      {/* 浏览量统计组件 */}
+      <ResourceViewTracker resourceId={resource.id} />
+      
+      <div className="grid md:grid-cols-2 gap-8">
+        <div>
+          <div className="aspect-[4/3] bg-neutral-100 rounded-lg overflow-hidden relative">
+            {resource.coverImageUrl ? (
+              <Image
+                src={resource.coverImageUrl}
+                alt={resource.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                unoptimized
+              />
+            ) : (
+              <div className="h-full w-full grid place-items-center text-neutral-400">无封面</div>
+            )}
+          </div>
+        </div>
+        <div>
+          <h1 className="text-2xl font-semibold text-white">{resource.title}</h1>
+          <p className="mt-3 text-gray-300 whitespace-pre-line">{resource.description}</p>
+          
+          {/* 资源统计信息 */}
+          <div className="mt-4 flex gap-4 text-sm text-gray-400">
+            <span>📊 下载次数: {resource.downloadCount || 0}</span>
+            <span>⭐ 评分: {resource.rating ? resource.rating.toFixed(1) : '暂无评分'}</span>
+            <span>💬 评论: {resource.reviewCount || 0}</span>
+            <span>❤️ 收藏: {resource.favoriteCount || 0}</span>
+          </div>
+          
+          {/* 标签 */}
+          {resource.tags?.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {resource.tags.map((t: string) => (
+                <span key={t} className="text-xs rounded-full border border-white/20 px-2 py-1 text-gray-300 bg-white/5">#{t}</span>
+              ))}
+            </div>
+          ) : null}
+          
+          {/* 资源操作按钮 */}
+          <ResourceActions 
+            resource={resource} 
+            session={session}
+            resourceId={resource.id}
+          />
         </div>
       </div>
-      <div>
-        <h1 className="text-2xl font-semibold">{resource.title}</h1>
-        <p className="mt-3 text-neutral-700 whitespace-pre-line">{resource.description}</p>
-        {resource.tags?.length ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {resource.tags.map((t: string) => (
-              <span key={t} className="text-xs rounded-full border px-2 py-1 text-neutral-600">#{t}</span>
-            ))}
-          </div>
-        ) : null}
-        {resource.quarkLink && (
-          <div className="mt-6">
-            <Link
-              href={`/api/resources/${resource.id}/click`}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700 transition-colors"
-            >
-              打开夸克网盘链接（计次）
-            </Link>
-          </div>
-        )}
+
+      {/* 评分组件 */}
+      <div className="mt-8">
+        <ResourceRating
+          resourceId={resource.id}
+          session={session}
+          initialRating={resource.rating || 0}
+          initialReviewCount={resource.reviewCount || 0}
+        />
+      </div>
+
+      {/* 评论组件 */}
+      <div className="mt-8">
+        <ResourceComments
+          resourceId={resource.id}
+          session={session}
+        />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 // 权限枚举
 export enum Permission {
@@ -162,7 +163,7 @@ export async function getUserPermissions(userId: string): Promise<string[]> {
     if (userRoles.length === 0) return [];
 
     // 获取角色权限
-    const roleIds = userRoles.map(ur => ur.roleId);
+    const roleIds = userRoles.map(ur => new ObjectId(ur.roleId));
     const roles = await db.collection("Role").find({ 
       _id: { $in: roleIds },
       isActive: true 

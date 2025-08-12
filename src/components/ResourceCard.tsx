@@ -17,18 +17,26 @@ interface ResourceCardProps {
       slug: string;
     } | null;
     _count?: {
-      clicks?: number;
+      clicks?: number;    // 下载次数
+      views?: number;     // 浏览次数
+      favorites?: number; // 收藏次数
     };
     updatedAt?: string;
+    rating?: number;      // 资源评分
   };
   index?: number;
 }
 
 export default function ResourceCard({ resource, index = 0 }: ResourceCardProps) {
+  // 计算综合热度 (浏览量 + 下载量*3 + 收藏数*5)
+  const totalEngagement = (resource._count?.views || 0) + 
+                         (resource._count?.clicks || 0) * 3 + 
+                         (resource._count?.favorites || 0) * 5;
+
   // 决定卡片变体
   const getCardVariant = () => {
-    if (resource._count?.clicks && resource._count.clicks > 100) return 'premium';
-    if (resource._count?.clicks && resource._count.clicks > 50) return 'featured';
+    if (totalEngagement > 100) return 'premium';
+    if (totalEngagement > 30) return 'featured';
     return 'default';
   };
   
@@ -61,15 +69,15 @@ export default function ResourceCard({ resource, index = 0 }: ResourceCardProps)
       glowEffect={true}
       particleEffect={getCardVariant() === 'premium'}
       metadata={{
-        views: resource._count?.clicks,
-        likes: Math.floor(Math.random() * 50) + 10, // 模拟点赞数
-        downloadCount: resource._count?.clicks,
-        rating: 4 + Math.random(), // 4-5星随机评分
+        views: resource._count?.views || 0,                    // 真实浏览量
+        likes: resource._count?.favorites || 0,                // 收藏数作为点赞数
+        downloadCount: resource._count?.clicks || 0,           // 真实下载量
+        rating: resource.rating || 0,                          // 真实评分
         updatedAt: formatDate(resource.updatedAt),
         tags: resource.tags.slice(0, 3),
-        isHot: (resource._count?.clicks ?? 0) > 50,
+        isHot: totalEngagement > 30,                           // 基于真实综合热度判断
         isNew: resource.updatedAt && 
-               new Date(resource.updatedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+               new Date(resource.updatedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)  // 7天内更新判断NEW
       }}
       className="h-full"
     />

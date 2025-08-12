@@ -186,6 +186,9 @@ export async function POST(request: NextRequest) {
     const parsed = resourceSchema.safeParse(sanitizedData);
     
     if (!parsed.success) {
+      console.log('Validation errors:', parsed.error.errors);
+      console.log('Input data:', sanitizedData);
+      
       SecurityAuditLog.logSecurityEvent(
         'admin_resource_validation_failed',
         { errors: parsed.error.errors, input: sanitizedData },
@@ -225,35 +228,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 使用事务创建资源
-    const result = await prisma.$transaction(async (tx) => {
-      // 创建资源记录
-      const resource = await tx.resource.create({
-        data: {
-          ...parsed.data,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        include: {
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true
-            }
-          }
-        }
-      });
-
-      return resource;
-    });
-
-    // 在MongoDB中创建统计记录
+    // 直接使用MongoDB创建资源记录（避免Prisma事务要求）
     const client = await clientPromise;
     const db = client.db();
     
+    const resourceData = {
+      ...parsed.data,
+      downloadCount: 0,
+      rating: 0,
+      reviewCount: 0,
+      favoriteCount: 0,
+      isFeatured: false,
+      status: "ACTIVE",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const insertResult = await db.collection('Resource').insertOne(resourceData);
+    const result = {
+      id: insertResult.insertedId.toString(),
+      ...resourceData
+    };
+
+    // 创建统计记录
+    
     await db.collection('ResourceStat').insertOne({
-      resourceId: result.id,
+      resourceId: insertResult.insertedId,
       views: 0,
       clicks: 0,
       likes: 0,

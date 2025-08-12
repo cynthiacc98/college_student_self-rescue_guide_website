@@ -87,16 +87,30 @@ export async function getSystemSettings(): Promise<SystemSettings> {
  */
 export async function getBasicSettings(): Promise<Pick<SystemSettings, 'siteName' | 'siteDescription'>> {
   try {
-    // 首次尝试获取设置
-    const settings = await getSystemSettings();
+    // 直接从MongoDB获取设置，与系统设置保持一致
+    const { MongoClient } = await import('mongodb');
+    const clientPromise = await import('@/lib/mongodb');
+    const client = await clientPromise.default;
+    const db = client.db();
+    
+    const settings = await db.collection("settings").findOne({ type: "system" });
+    
+    if (settings?.config) {
+      return {
+        siteName: settings.config.siteName || DEFAULT_SETTINGS.siteName,
+        siteDescription: settings.config.siteDescription || DEFAULT_SETTINGS.siteDescription
+      };
+    }
+    
+    console.info('未找到MongoDB设置数据，使用默认配置');
     return {
-      siteName: settings.siteName,
-      siteDescription: settings.siteDescription
+      siteName: DEFAULT_SETTINGS.siteName,
+      siteDescription: DEFAULT_SETTINGS.siteDescription
     };
   } catch (error) {
-    console.error('获取基础设置失败，尝试初始化默认设置:', error);
+    console.error('获取基础设置失败:', error);
     
-    // 暂时直接使用默认值，避免复杂的数据库初始化
+    // 使用默认值作为后备方案
     return {
       siteName: DEFAULT_SETTINGS.siteName,
       siteDescription: DEFAULT_SETTINGS.siteDescription

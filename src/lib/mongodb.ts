@@ -131,6 +131,13 @@ class QueryPerformanceMonitor {
 
 export const queryMonitor = new QueryPerformanceMonitor();
 
+// 连接数据库的主函数
+export async function connectToDatabase() {
+  const client = await clientPromise;
+  const db = client.db('college_student_self_rescue_guide');
+  return { client, db };
+}
+
 // 优化的数据库操作包装器
 export async function withCache<T>(
   key: string,

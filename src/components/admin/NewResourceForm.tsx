@@ -36,10 +36,10 @@ export default function NewResourceForm({ categories }: NewResourceFormProps) {
       headers: { "Content-Type": "application/json" }, 
       body: JSON.stringify(parsed.data) 
     });
-    const data = await res.json();
-    if (!res.ok) return toast.error(data.error || "创建失败");
+    const response = await res.json();
+    if (!res.ok) return toast.error(response.error || "创建失败");
     toast.success("创建成功");
-    router.push(`/admin/resources/${data.id}`);
+    router.push(`/admin/resources/${response.data.id}`);
   };
 
   return (

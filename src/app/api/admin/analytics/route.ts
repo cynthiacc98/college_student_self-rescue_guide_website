@@ -31,8 +31,6 @@ export async function GET(request: NextRequest) {
       overviewData,
       trafficTrend,
       deviceStats,
-      locationStats,
-      categoryPerformance,
       userBehavior,
       conversionFunnel
     ] = await Promise.all([
@@ -44,12 +42,6 @@ export async function GET(request: NextRequest) {
       
       // 设备统计
       getDeviceStats(db, startDate, now),
-      
-      // 地理位置统计
-      getLocationStats(db, startDate, now),
-      
-      // 分类表现
-      getCategoryPerformance(db, startDate, now),
       
       // 用户行为
       getUserBehavior(db, startDate, now),
@@ -63,8 +55,6 @@ export async function GET(request: NextRequest) {
       charts: {
         trafficTrend,
         deviceStats,
-        locationStats,
-        categoryPerformance,
         userBehavior,
         conversionFunnel
       }
@@ -191,102 +181,6 @@ async function getDeviceStats(db: any, startDate: Date, endDate: Date) {
   }));
 }
 
-// 获取地理位置统计
-async function getLocationStats(db: any, startDate: Date, endDate: Date) {
-  const locationStats = await db.collection('UserActivity').aggregate([
-    {
-      $match: {
-        createdAt: { $gte: startDate, $lte: endDate },
-        country: { $exists: true, $ne: null }
-      }
-    },
-    {
-      $group: {
-        _id: '$country',
-        users: { $addToSet: '$userId' },
-        sessions: { $addToSet: '$sessionId' }
-      }
-    },
-    {
-      $project: {
-        country: '$_id',
-        users: { $size: '$users' },
-        sessions: { $size: '$sessions' }
-      }
-    },
-    { $sort: { users: -1 } },
-    { $limit: 10 }
-  ]).toArray();
-  
-  return locationStats.map((stat: any) => ({
-    country: stat.country || '未知',
-    users: stat.users,
-    sessions: stat.sessions
-  }));
-}
-
-// 获取分类表现
-async function getCategoryPerformance(db: any, startDate: Date, endDate: Date) {
-  const categoryPerformance = await db.collection('UserActivity').aggregate([
-    {
-      $match: {
-        createdAt: { $gte: startDate, $lte: endDate },
-        categoryId: { $exists: true, $ne: null },
-        action: { $in: ['VIEW', 'CLICK'] }
-      }
-    },
-    {
-      $lookup: {
-        from: 'Category',
-        let: { categoryId: { $toObjectId: '$categoryId' } },
-        pipeline: [
-          { $match: { $expr: { $eq: ['$_id', '$$categoryId'] } } },
-          { $project: { name: 1 } }
-        ],
-        as: 'category'
-      }
-    },
-    { $unwind: '$category' },
-    {
-      $group: {
-        _id: {
-          category: '$category.name',
-          action: '$action'
-        },
-        count: { $sum: 1 }
-      }
-    },
-    {
-      $group: {
-        _id: '$_id.category',
-        views: {
-          $sum: { $cond: [{ $eq: ['$_id.action', 'VIEW'] }, '$count', 0] }
-        },
-        clicks: {
-          $sum: { $cond: [{ $eq: ['$_id.action', 'CLICK'] }, '$count', 0] }
-        }
-      }
-    },
-    {
-      $project: {
-        category: '$_id',
-        views: 1,
-        clicks: 1,
-        ctr: {
-          $cond: [
-            { $gt: ['$views', 0] },
-            { $multiply: [{ $divide: ['$clicks', '$views'] }, 100] },
-            0
-          ]
-        }
-      }
-    },
-    { $sort: { views: -1 } },
-    { $limit: 8 }
-  ]).toArray();
-  
-  return categoryPerformance;
-}
 
 // 获取用户行为数据
 async function getUserBehavior(db: any, startDate: Date, endDate: Date) {

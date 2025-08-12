@@ -3,8 +3,8 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/Skeleton";
-import Link from "next/link";
-import Image from "next/image";
+import ResourceCard from "@/components/ResourceCard";
+import clientPromise from "@/lib/mongodb";
 
 type SearchWhere = {
   isPublic: boolean;
@@ -12,7 +12,24 @@ type SearchWhere = {
   categoryId?: string;
 };
 
-type ResourceListItem = { id: string; title: string; coverImageUrl: string | null };
+interface ResourceWithStats {
+  id: string;
+  title: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  tags: string[];
+  isPublic: boolean;
+  updatedAt: string;
+  category?: {
+    name: string;
+    slug: string;
+  } | null;
+  _count?: {
+    clicks?: number;    // 下载次数
+    views?: number;     // 浏览次数
+    favorites?: number; // 收藏次数
+  };
+}
 
 async function SearchResult({ q, category, page }: { q?: string; category?: string; page: number; }) {
   const where: SearchWhere = { isPublic: true };
@@ -27,21 +44,97 @@ async function SearchResult({ q, category, page }: { q?: string; category?: stri
 
   const take = 12;
   const skip = (page - 1) * take;
-  const items: ResourceListItem[] = await prisma.resource.findMany({ where, orderBy: { createdAt: "desc" }, skip, take, select: { id: true, title: true, coverImageUrl: true } });
+
+  // 获取搜索结果（包含分类信息）
+  const resources = await prisma.resource.findMany({
+    where, 
+    orderBy: { createdAt: "desc" }, 
+    skip, 
+    take,
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      coverImageUrl: true,
+      tags: true,
+      isPublic: true,
+      updatedAt: true,
+      category: {
+        select: {
+          name: true,
+          slug: true
+        }
+      }
+    }
+  });
+
+  if (resources.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+          <span className="text-4xl">🔍</span>
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-4">没有找到相关资源</h2>
+        <p className="text-gray-400 mb-8 max-w-md mx-auto">
+          试试其他关键词，或者浏览我们的资料库
+        </p>
+        <a
+          href="/resources"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all"
+        >
+          浏览全部资源
+        </a>
+      </div>
+    );
+  }
+
+  // 获取完整统计数据（与资料库页面保持一致）
+  const client = await clientPromise;
+  const db = client.db();
+  const resourceIds = resources.map(r => r.id);
+
+  // 并行获取所有统计数据
+  const [resourceStats, favoriteStats] = await Promise.all([
+    // 获取浏览量和下载量统计
+    db.collection("ResourceStat").find({
+      resourceId: { $in: resourceIds }
+    }).toArray(),
+    
+    // 获取收藏数统计
+    db.collection('UserFavorites').aggregate([
+      { $match: { resourceId: { $in: resourceIds } } },
+      { $group: { _id: "$resourceId", count: { $sum: 1 } } }
+    ]).toArray()
+  ]);
+
+  // 创建统计映射
+  const statsMap = new Map(resourceStats.map(s => [s.resourceId, s]));
+  const favoriteMap = new Map(favoriteStats.map(f => [f._id, f.count]));
+
+  // 构建带统计数据的资源列表
+  const resourcesWithStats: ResourceWithStats[] = resources.map((resource) => {
+    const stats = statsMap.get(resource.id);
+    const favoriteCount = favoriteMap.get(resource.id) || 0;
+    
+    return {
+      ...resource,
+      updatedAt: resource.updatedAt.toISOString(),
+      _count: {
+        clicks: stats?.downloads || 0,     // 下载次数
+        views: stats?.views || 0,          // 浏览次数  
+        favorites: favoriteCount           // 收藏次数
+      }
+    };
+  });
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {items.map((r: ResourceListItem) => (
-        <Link key={r.id} href={`/resources/${r.id}`} className="group rounded-xl border bg-white overflow-hidden">
-          <div className="relative aspect-[4/3]">
-            {r.coverImageUrl ? (
-              <Image src={r.coverImageUrl} alt={r.title} fill className="object-cover transition-transform duration-300 group-hover:scale-[1.03]" sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw" />
-            ) : (
-              <div className="h-full w-full grid place-items-center text-neutral-400">无封面</div>
-            )}
-          </div>
-          <div className="p-3 text-sm font-medium">{r.title}</div>
-        </Link>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {resourcesWithStats.map((resource, index) => (
+        <ResourceCard 
+          key={resource.id} 
+          resource={resource}
+          index={index} 
+        />
       ))}
     </div>
   );

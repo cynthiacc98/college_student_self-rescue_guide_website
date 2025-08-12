@@ -25,6 +25,11 @@ model Category {
   isFeatured  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // 关系字段
+  resources   Resource[]
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    Category[] @relation("CategoryHierarchy")
 }
 
 model Resource {
@@ -49,6 +54,13 @@ model Resource {
   status        String    @default("ACTIVE") // ACTIVE, PENDING, REJECTED, ARCHIVED
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  // 关系字段
+  category      Category? @relation(fields: [categoryId], references: [id])
+  comments      ResourceComment[]
+  favorites     UserFavorites[]
+  reports       ResourceReport[]
+  downloads     DownloadRecord[]
 
   @@index([categoryId])
   @@index([authorId])
@@ -187,6 +199,9 @@ model UserFavorites {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  // 关系字段
+  resource   Resource @relation(fields: [resourceId], references: [id])
+
   @@unique([userId, resourceId])
   @@index([userId])
   @@index([resourceId])
@@ -204,6 +219,11 @@ model ResourceComment {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  // 关系字段
+  resource   Resource @relation(fields: [resourceId], references: [id])
+  parent     ResourceComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies    ResourceComment[] @relation("CommentReplies")
+
   @@index([resourceId])
   @@index([userId])
   @@index([parentId])
@@ -217,6 +237,9 @@ model DownloadRecord {
   ipAddress  String
   userAgent  String?
   downloadAt DateTime @default(now())
+
+  // 关系字段
+  resource   Resource @relation(fields: [resourceId], references: [id])
 
   @@index([resourceId])
   @@index([userId])
@@ -235,6 +258,9 @@ model ResourceReport {
   reviewedAt DateTime?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  // 关系字段
+  resource   Resource @relation(fields: [resourceId], references: [id])
 
   @@index([resourceId])
   @@index([userId])

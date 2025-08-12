@@ -36,6 +36,11 @@ function isDuplicateClick(ip: string, resourceId: string, timeWindow = 5000): bo
   return false;
 }
 
+// 检查字符串是否为有效的 MongoDB ObjectId
+function isValidObjectId(id: string): boolean {
+  return ObjectId.isValid(id) && /^[0-9a-fA-F]{24}$/.test(id);
+}
+
 // 优化的资源查询
 async function getResourceWithCache(id: string) {
   const cacheKey = createCacheKey('resource', { id }, {});
@@ -46,18 +51,36 @@ async function getResourceWithCache(id: string) {
       const client = await clientPromise;
       const db = client.db();
       
-      const resource = await db.collection("Resource").findOne(
-        { _id: new ObjectId(id) },
-        { 
-          projection: { 
-            _id: 1, 
-            title: 1, 
-            quarkLink: 1, 
-            categoryId: 1,
-            tags: 1
-          } 
-        }
-      );
+      let resource;
+      if (isValidObjectId(id)) {
+        // 按 ObjectId 查询
+        resource = await db.collection("Resource").findOne(
+          { _id: new ObjectId(id) },
+          { 
+            projection: { 
+              _id: 1, 
+              title: 1, 
+              quarkLink: 1, 
+              categoryId: 1,
+              tags: 1
+            } 
+          }
+        );
+      } else {
+        // 按 slug 查询
+        resource = await db.collection("Resource").findOne(
+          { slug: id },
+          { 
+            projection: { 
+              _id: 1, 
+              title: 1, 
+              quarkLink: 1, 
+              categoryId: 1,
+              tags: 1
+            } 
+          }
+        );
+      }
       
       return resource;
     },
@@ -67,12 +90,14 @@ async function getResourceWithCache(id: string) {
 
 // 批量更新统计数据
 class ClickStatsBuffer {
-  private buffer = new Map<string, number>();
+  private buffer = new Map<string, number>(); // 存储 ObjectId 字符串
   private timer: NodeJS.Timeout | null = null;
   
-  add(resourceId: string): void {
-    const current = this.buffer.get(resourceId) || 0;
-    this.buffer.set(resourceId, current + 1);
+  // 传入 ObjectId，确保只存储有效的 ObjectId
+  add(resourceObjectId: ObjectId): void {
+    const objectIdStr = resourceObjectId.toString();
+    const current = this.buffer.get(objectIdStr) || 0;
+    this.buffer.set(objectIdStr, current + 1);
     
     // 延迟批量写入
     if (!this.timer) {
@@ -93,8 +118,22 @@ class ClickStatsBuffer {
       const client = await clientPromise;
       const db = client.db();
       
-      // 批量更新
-      const bulkOps = updates.map(([resourceId, count]) => ({
+      // 验证所有 resourceId 都是有效的 ObjectId
+      const validUpdates = updates.filter(([resourceId]) => {
+        try {
+          return ObjectId.isValid(resourceId) && /^[0-9a-fA-F]{24}$/.test(resourceId);
+        } catch {
+          return false;
+        }
+      });
+      
+      if (validUpdates.length === 0) {
+        console.warn('没有有效的资源ID用于批量更新');
+        return;
+      }
+      
+      // 批量更新（只处理有效的 ObjectId）
+      const bulkOps = validUpdates.map(([resourceId, count]) => ({
         updateOne: {
           filter: { resourceId: new ObjectId(resourceId) },
           update: {
@@ -108,9 +147,10 @@ class ClickStatsBuffer {
       
       if (bulkOps.length > 0) {
         await db.collection("ResourceStat").bulkWrite(bulkOps, { ordered: false });
+        console.log(`成功批量更新 ${bulkOps.length} 个资源的点击统计`);
         
         // 更新实时统计
-        for (const [resourceId, count] of updates) {
+        for (const [resourceId, count] of validUpdates) {
           realtimeManager.recordResourceView(resourceId);
           
           // 更新缓存中的统计数据
@@ -119,13 +159,21 @@ class ClickStatsBuffer {
         }
       }
       
+      // 记录被过滤的无效更新
+      const invalidCount = updates.length - validUpdates.length;
+      if (invalidCount > 0) {
+        console.warn(`过滤了 ${invalidCount} 个无效的资源ID`);
+      }
+      
     } catch (error) {
       console.error('批量更新点击统计失败:', error);
       
-      // 重新加入缓冲区
+      // 重新加入缓冲区（只重新加入有效的）
       for (const [resourceId, count] of updates) {
-        const current = this.buffer.get(resourceId) || 0;
-        this.buffer.set(resourceId, current + count);
+        if (ObjectId.isValid(resourceId) && /^[0-9a-fA-F]{24}$/.test(resourceId)) {
+          const current = this.buffer.get(resourceId) || 0;
+          this.buffer.set(resourceId, current + count);
+        }
       }
     }
   }
@@ -159,7 +207,7 @@ export async function GET(
     const { id } = await ctx.params;
     
     // 输入验证
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id) {
       return NextResponse.json(
         { error: '无效的资源ID' },
         { status: 400 }
@@ -203,7 +251,8 @@ export async function GET(
     }
     
     // 异步更新统计数据（使用缓冲区）
-    clickStatsBuffer.add(id);
+    // 确保传入的是 ObjectId
+    clickStatsBuffer.add(resource._id);
     
     // 记录安全日志
     SecurityAuditLog.logSecurityEvent(
@@ -281,7 +330,7 @@ export async function POST(
     const { id } = await ctx.params;
     
     // 输入验证
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id) {
       return NextResponse.json(
         { success: false, error: '无效的资源ID' },
         { status: 400 }
@@ -307,14 +356,28 @@ export async function POST(
     const client = await clientPromise;
     const db = client.db();
     
-    const resource = await db.collection("Resource").findOne(
-      { 
-        _id: new ObjectId(id), 
-        status: "ACTIVE", 
-        isPublic: true 
-      },
-      { projection: { _id: 1, title: 1, quarkLink: 1 } }
-    );
+    let resource;
+    if (isValidObjectId(id)) {
+      // 按 ObjectId 查询
+      resource = await db.collection("Resource").findOne(
+        { 
+          _id: new ObjectId(id), 
+          status: "ACTIVE", 
+          isPublic: true 
+        },
+        { projection: { _id: 1, title: 1, quarkLink: 1 } }
+      );
+    } else {
+      // 按 slug 查询
+      resource = await db.collection("Resource").findOne(
+        { 
+          slug: id, 
+          status: "ACTIVE", 
+          isPublic: true 
+        },
+        { projection: { _id: 1, title: 1, quarkLink: 1 } }
+      );
+    }
     
     if (!resource) {
       return NextResponse.json(
@@ -325,12 +388,13 @@ export async function POST(
     
     // 更新点击统计
     const now = new Date();
+    const resourceObjectId = resource._id;
     await db.collection("ResourceStat").updateOne(
-      { resourceId: new ObjectId(id) },
+      { resourceId: resourceObjectId },
       {
         $inc: { clicks: 1 },
         $setOnInsert: { 
-          resourceId: new ObjectId(id),
+          resourceId: resourceObjectId,
           views: 0,
           likes: 0,
           createdAt: now

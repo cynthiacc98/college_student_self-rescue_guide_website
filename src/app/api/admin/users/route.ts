@@ -18,16 +18,20 @@ export async function GET(request: NextRequest) {
       {
         $lookup: {
           from: 'UserRole',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: { $toString: '$_id' } },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'userRoles'
         }
       },
       {
         $lookup: {
           from: 'Role',
-          localField: 'userRoles.roleId',
-          foreignField: '_id',
+          let: { roleIds: '$userRoles.roleId' },
+          pipeline: [
+            { $match: { $expr: { $in: [{ $toString: '$_id' }, '$$roleIds'] } } }
+          ],
           as: 'roles'
         }
       },
@@ -61,7 +65,14 @@ export async function GET(request: NextRequest) {
       _id: undefined
     }));
 
-    return NextResponse.json({ success: true, data: formattedUsers });
+    const response = NextResponse.json({ success: true, data: formattedUsers });
+    
+    // 禁用缓存，确保每次都获取最新数据
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
     
   } catch (error) {
     console.error('Get users error:', error);

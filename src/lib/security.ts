@@ -175,6 +175,11 @@ export class InputValidation {
       return input.replace(/\$[\w]+/g, '');
     }
     
+    if (Array.isArray(input)) {
+      // 处理数组，保持数组结构
+      return input.map(item => this.sanitizeNoSQL(item));
+    }
+    
     if (typeof input === 'object' && input !== null) {
       const sanitized: Record<string, unknown> = {};
       for (const key in input) {

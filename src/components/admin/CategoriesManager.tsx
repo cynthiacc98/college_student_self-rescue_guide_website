@@ -50,7 +50,7 @@ export default function CategoriesManager({ initialCategories }: { initialCatego
   async function refresh() {
     const res = await fetch("/api/admin/categories");
     const data = await res.json();
-    if (res.ok) setCategories(data.items);
+    if (res.ok) setCategories(data.data?.categories || []);
   }
 
   async function create(values: CategoryInput) {

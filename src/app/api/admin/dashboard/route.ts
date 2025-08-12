@@ -35,8 +35,13 @@ export async function GET(request: NextRequest) {
       dailyStats,
       categoryStats,
       topResources,
-      userGrowth,
-      recentActivity
+      userGrowthData,
+      recentActivity,
+      // 获取增长率计算所需的历史数据
+      prevResourceCount,
+      prevUserCount,
+      prevTotalViews,
+      prevActiveUsers
     ] = await Promise.all([
       // 基础指标
       prisma.resource.count(),
@@ -78,11 +83,26 @@ export async function GET(request: NextRequest) {
       getUserGrowthData(db, startDate, now),
       
       // 最近活动
-      getRecentActivity(db)
+      getRecentActivity(db),
+      
+      // 获取上个周期的数据用于计算增长率
+      getPreviousResourceCount(db, days),
+      getPreviousUserCount(db, days),
+      getPreviousTotalViews(db, days),
+      getPreviousActiveUsers(db, days)
     ]);
     
-    // 计算月增长率（模拟数据，实际应基于历史数据计算）
-    const monthlyGrowth = 12.5;
+    // 计算真实增长率
+    const calculateGrowthRate = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100 * 10) / 10;
+    };
+
+    // 计算各项指标的增长率
+    const resourceGrowth = calculateGrowthRate(resourceCount, prevResourceCount);
+    const userGrowthRate = calculateGrowthRate(userCount, prevUserCount); 
+    const viewsGrowth = calculateGrowthRate(totalViews, prevTotalViews);
+    const activeUsersGrowth = calculateGrowthRate(activeUsers, prevActiveUsers);
     
     const dashboardData = {
       metrics: {
@@ -93,13 +113,18 @@ export async function GET(request: NextRequest) {
         totalClicks,
         activeUsers,
         todayRegistrations,
-        monthlyGrowth
+        monthlyGrowth: userGrowthRate, // 使用用户增长率作为整体增长率
+        // 添加各项指标的增长率
+        resourceGrowth,
+        userGrowth: userGrowthRate,
+        viewsGrowth,
+        activeUsersGrowth
       },
       charts: {
         dailyStats,
         categoryStats,
         topResources,
-        userGrowth
+        userGrowth: userGrowthData
       },
       recentActivity
     };
@@ -254,9 +279,18 @@ async function getRecentActivity(db: any) {
     {
       $lookup: {
         from: 'users',
-        let: { userId: { $toObjectId: '$userId' } },
+        let: { userId: '$userId' },
         pipeline: [
-          { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+          { 
+            $match: { 
+              $expr: { 
+                $or: [
+                  { $eq: ['$_id', '$$userId'] },
+                  { $eq: [{ $toString: '$_id' }, '$$userId'] }
+                ]
+              }
+            }
+          },
           { $project: { name: 1, email: 1 } }
         ],
         as: 'user'
@@ -311,4 +345,54 @@ function formatTimeAgo(date: Date): string {
   if (diffDays < 7) return `${diffDays}天前`;
   
   return new Date(date).toLocaleDateString('zh-CN');
+}
+
+// 获取上个周期的资源数量
+async function getPreviousResourceCount(db: any, days: number): Promise<number> {
+  const previousEndDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const previousStartDate = new Date(previousEndDate.getTime() - days * 24 * 60 * 60 * 1000);
+  
+  return await db.collection('Resource').countDocuments({
+    createdAt: { $gte: previousStartDate, $lt: previousEndDate }
+  });
+}
+
+// 获取上个周期的用户数量
+async function getPreviousUserCount(db: any, days: number): Promise<number> {
+  const previousEndDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const previousStartDate = new Date(previousEndDate.getTime() - days * 24 * 60 * 60 * 1000);
+  
+  return await db.collection('users').countDocuments({
+    createdAt: { $gte: previousStartDate, $lt: previousEndDate }
+  });
+}
+
+// 获取上个周期的总浏览量
+async function getPreviousTotalViews(db: any, days: number): Promise<number> {
+  const previousEndDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const previousStartDate = new Date(previousEndDate.getTime() - days * 24 * 60 * 60 * 1000);
+  
+  const result = await db.collection('UserActivity').aggregate([
+    {
+      $match: {
+        action: 'VIEW',
+        createdAt: { $gte: previousStartDate, $lt: previousEndDate }
+      }
+    },
+    { $count: 'total' }
+  ]).toArray();
+  
+  return result[0]?.total || 0;
+}
+
+// 获取上个周期的活跃用户数
+async function getPreviousActiveUsers(db: any, days: number): Promise<number> {
+  const previousEndDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const previousStartDate = new Date(previousEndDate.getTime() - days * 24 * 60 * 60 * 1000);
+  
+  const users = await db.collection('UserActivity').distinct('userId', {
+    createdAt: { $gte: previousStartDate, $lt: previousEndDate }
+  });
+  
+  return users.length;
 }

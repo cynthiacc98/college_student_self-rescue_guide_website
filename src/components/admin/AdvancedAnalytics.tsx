@@ -17,7 +17,6 @@ import {
   RefreshCw,
   PieChart,
   Activity,
-  Globe,
   Smartphone,
   Monitor,
   Tablet
@@ -36,8 +35,6 @@ interface AnalyticsData {
   charts: {
     trafficTrend: Array<{ date: string; views: number; clicks: number; users: number }>;
     deviceStats: Array<{ name: string; value: number; color: string }>;
-    locationStats: Array<{ country: string; users: number; sessions: number }>;
-    categoryPerformance: Array<{ category: string; views: number; clicks: number; ctr: number }>;
     userBehavior: Array<{ page: string; avgTime: number; bounceRate: number }>;
     conversionFunnel: Array<{ stage: string; users: number; rate: number }>;
   };
@@ -67,7 +64,7 @@ export default function AdvancedAnalytics() {
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/analytics?range=${timeRange}`);
+      const response = await fetch(`/api/dev/analytics?range=${timeRange}`);
       if (!response.ok) throw new Error('获取分析数据失败');
       const result = await response.json();
       setData(result.data);
@@ -230,20 +227,20 @@ export default function AdvancedAnalytics() {
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-400">{data?.realtime.activeUsers || 0}</div>
+            <div className="text-2xl font-bold text-green-400">{data?.realtime?.activeUsers || 0}</div>
             <div className="text-sm text-white/60">在线用户</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-400">{data?.realtime.currentSessions || 0}</div>
+            <div className="text-2xl font-bold text-blue-400">{data?.realtime?.currentSessions || 0}</div>
             <div className="text-sm text-white/60">当前会话</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-400">{data?.realtime.pageViews || 0}</div>
+            <div className="text-2xl font-bold text-purple-400">{data?.realtime?.pageViews || 0}</div>
             <div className="text-sm text-white/60">今日浏览</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-400">
-              {data?.realtime.topPages?.length || 0}
+              {data?.realtime?.topPages?.length || 0}
             </div>
             <div className="text-sm text-white/60">活跃页面</div>
           </div>
@@ -335,52 +332,6 @@ export default function AdvancedAnalytics() {
         />
       </div>
 
-      {/* 详细分析区域 */}
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* 地理位置统计 */}
-        <div className="lg:col-span-1">
-          <BaseChart
-            title="地理位置分布"
-            subtitle="访客地理位置统计"
-            loading={loading}
-          >
-            {loading ? null : (
-              <div className="space-y-3">
-                {(data?.charts.locationStats || []).slice(0, 8).map((location, index) => (
-                  <div key={location.country} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-semibold">
-                        {index + 1}
-                      </div>
-                      <div>
-                        <div className="text-white font-medium">{location.country}</div>
-                        <div className="text-xs text-white/60">{location.sessions} 次会话</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-white font-semibold">{location.users}</div>
-                      <div className="text-xs text-white/60">用户</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </BaseChart>
-        </div>
-
-        {/* 分类表现 */}
-        <div className="lg:col-span-2">
-          <AnalyticsChart
-            type="bar"
-            title="分类表现分析"
-            subtitle="各分类的浏览量和点击量对比"
-            data={data?.charts.categoryPerformance || []}
-            dataKey="views"
-            xAxisKey="category"
-            loading={loading}
-          />
-        </div>
-      </div>
 
       {/* 用户行为分析 */}
       <div className="grid gap-8 lg:grid-cols-2">
