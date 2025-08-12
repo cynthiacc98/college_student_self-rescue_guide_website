@@ -893,6 +893,17 @@ h3 {
   }
 }
 
+/* 添加额外的全局动画 */
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  animation: gradient 6s ease infinite;
+}
+
 /* Responsive Utilities */
 @media (max-width: 768px) {
   .btn {

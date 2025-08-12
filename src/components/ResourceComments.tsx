@@ -318,7 +318,7 @@ export default function ResourceComments({ resourceId, session }: ResourceCommen
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="写下你的想法..."
-                className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full px-3 py-2 bg-gray-800 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 rows={3}
                 maxLength={1000}
               />
@@ -418,7 +418,7 @@ export default function ResourceComments({ resourceId, session }: ResourceCommen
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
                     placeholder="写下你的回复..."
-                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    className="w-full px-3 py-2 bg-gray-800 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                     rows={2}
                     maxLength={1000}
                   />
