@@ -7,7 +7,10 @@ const { MongoClient } = require('mongodb');
 const bcrypt = require('bcryptjs');
 
 // 验证配置
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/college_student_self_rescue_guide';
+const MONGODB_URI = process.env.MONGODB_URI || process.env.DATABASE_URL;
+if (!MONGODB_URI) {
+  throw new Error('MONGODB_URI 或 DATABASE_URL 未设置，请先配置环境变量');
+}
 const API_BASE = 'http://localhost:3000/api';
 const ADMIN_TOKEN_HEADER = 'admin-token';
 const TEST_ADMIN_TOKEN = 'test-admin-token';

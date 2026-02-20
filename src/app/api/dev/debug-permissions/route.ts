@@ -6,6 +6,10 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
   try {
     console.log("=== 开始权限调试 ===");
     

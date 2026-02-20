@@ -3,6 +3,10 @@ import { initializeDefaultRoles, DefaultRoles } from "@/lib/rbac";
 import clientPromise from "@/lib/mongodb";
 
 export async function POST() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
   try {
     console.log("开始调试角色初始化...");
     

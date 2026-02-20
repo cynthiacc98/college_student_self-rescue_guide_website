@@ -18,8 +18,14 @@ export async function POST() {
     await initializeDefaultRoles();
 
     // 创建管理员用户
-    const adminEmail = "admin@example.com";
-    const adminPassword = "admin123";
+    const adminEmail = process.env.DEV_SEED_ADMIN_EMAIL || "admin@example.com";
+    const adminPassword = process.env.DEV_SEED_ADMIN_PASSWORD;
+    if (!adminPassword) {
+      return NextResponse.json(
+        { error: "DEV_SEED_ADMIN_PASSWORD is required for /api/dev/seed" },
+        { status: 400 }
+      );
+    }
     const hashedPassword = await hash(adminPassword, 12);
 
     const adminUser = await db.collection("users").findOneAndUpdate(
@@ -543,8 +549,7 @@ export async function POST() {
         users: userCount,
         categories: categoryCount,
         adminCreated: true,
-        adminEmail: "admin@example.com",
-        adminPassword: "admin123"
+        adminEmail
       }
     });
   } catch (e: unknown) {

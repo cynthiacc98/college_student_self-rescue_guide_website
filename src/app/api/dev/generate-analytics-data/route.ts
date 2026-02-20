@@ -3,6 +3,10 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
   try {
     const { db } = await connectToDatabase();
     
