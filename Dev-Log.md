@@ -90,3 +90,19 @@
 
 **完成情况**:
 - ✅ README 顶部莫伊计数器 URL 已更新
+
+---
+
+### [2026-02-20 18:05] GitHub Secret Alert 修复
+
+**任务描述**: 处理 GitHub Secret Scanning 报警（MongoDB Atlas 带凭据连接串泄露）。
+
+**技术决策**:
+- 使用 `git filter-branch` 重写全历史，将泄露连接串替换为本地无凭据连接串。
+- 清理 `refs/original`、过期 reflog 并执行 `git gc`，避免旧对象残留。
+- 通过历史搜索验证泄露字符串已从所有本地提交移除。
+
+**完成情况**:
+- ✅ 本地历史已清洗，泄露字符串不再存在于提交历史
+- ⚠️ 当前环境无法读取 GitHub 凭据，`git push --force-with-lease` 被拒绝
+- ⏳ 需在有权限环境执行强推并在 GitHub 将告警标记为 Revoked
